@@ -1,10 +1,12 @@
 import { JOB_IDS, PROJECT_IDS, SECTION_BUDGETS } from "./constants";
-import { countWords, estimateLines } from "./budgets";
-import { evidenceSupportsKeyword } from "./keywords";
+import { calculateResumeFitReport, countWords, estimateLines } from "./budgets";
+import { evidenceSupportsClaim } from "./keywords";
+import { isDisallowedStandaloneSkill } from "./skills";
 import {
   GeneratedResumeSchema,
   type EvidenceCard,
   type GeneratedResume,
+  type ResumeFitReport,
   type ResumeProfile,
   type ValidationIssue
 } from "./schemas";
@@ -22,12 +24,21 @@ type BudgetContext = {
     max?: number;
     minProjects?: number;
     maxProjects?: number;
+    minTotalBullets?: number;
+    maxTotalBullets?: number;
     bulletsPerProject?: { minBullets?: number; maxBullets?: number };
   };
   skills?: {
     maxCharacters?: number;
     maxEstimatedLines?: number;
     maxItems?: number;
+  };
+  page?: {
+    targetEstimatedLines?: number;
+    targetMinFillPercent?: number;
+    targetMaxFillPercent?: number;
+    hardMaxEstimatedLines?: number;
+    minTotalBullets?: number;
   };
 };
 
@@ -44,6 +55,7 @@ export type GeneratedResumeValidationResult = {
   success: boolean;
   valid: boolean;
   resume?: GeneratedResume;
+  fit_report?: ResumeFitReport;
   issues: ValidationIssue[];
 };
 
@@ -100,10 +112,22 @@ function getProjectBudget(context: ValidationContext) {
   return {
     minProjects: context.budgets?.projects?.minProjects ?? context.budgets?.projects?.min ?? SECTION_BUDGETS.projects.minProjects,
     maxProjects: context.budgets?.projects?.maxProjects ?? context.budgets?.projects?.max ?? SECTION_BUDGETS.projects.maxProjects,
+    minTotalBullets: context.budgets?.projects?.minTotalBullets ?? SECTION_BUDGETS.projects.minTotalBullets,
+    maxTotalBullets: context.budgets?.projects?.maxTotalBullets ?? SECTION_BUDGETS.projects.maxTotalBullets,
     bulletsPerProject: {
       minBullets: context.budgets?.projects?.bulletsPerProject?.minBullets ?? SECTION_BUDGETS.projects.bulletsPerProject.minBullets,
       maxBullets: context.budgets?.projects?.bulletsPerProject?.maxBullets ?? SECTION_BUDGETS.projects.bulletsPerProject.maxBullets
     }
+  };
+}
+
+function getPageBudget(context: ValidationContext) {
+  return {
+    targetEstimatedLines: context.budgets?.page?.targetEstimatedLines ?? SECTION_BUDGETS.page.targetEstimatedLines,
+    targetMinFillPercent: context.budgets?.page?.targetMinFillPercent ?? SECTION_BUDGETS.page.targetMinFillPercent,
+    targetMaxFillPercent: context.budgets?.page?.targetMaxFillPercent ?? SECTION_BUDGETS.page.targetMaxFillPercent,
+    hardMaxEstimatedLines: context.budgets?.page?.hardMaxEstimatedLines ?? SECTION_BUDGETS.page.hardMaxEstimatedLines,
+    minTotalBullets: context.budgets?.page?.minTotalBullets ?? SECTION_BUDGETS.page.minTotalBullets
   };
 }
 
@@ -174,6 +198,13 @@ export function validateGeneratedResume(
   const allowedProjects = new Set<ProjectId>(
     context.allowedProjectIds ?? context.profile?.allowed_projects.map((project) => project.project_id) ?? PROJECT_IDS
   );
+  const jobsById = new Map(resume.work_experience.map((job) => [job.job_id, job]));
+
+  for (const jobId of allowedJobs) {
+    if (!jobsById.has(jobId)) {
+      issues.push(issue("missing_work_experience", "work_experience", `Missing required work experience '${jobId}'.`));
+    }
+  }
 
   resume.work_experience.forEach((job, jobIndex) => {
     if (!allowedJobs.has(job.job_id)) {
@@ -181,23 +212,40 @@ export function validateGeneratedResume(
       return;
     }
     const budget = getWorkBudget(job.job_id, context);
-    if (job.bullets.length < budget.minBullets || job.bullets.length > budget.maxBullets) {
-      issues.push(issue("job_bullet_count", `work_experience.${jobIndex}.bullets`, `${job.job_id} requires ${budget.minBullets}-${budget.maxBullets} bullets.`));
+    if (job.bullets.length < budget.minBullets) {
+      issues.push(issue("job_under_min_bullets", `work_experience.${jobIndex}.bullets`, `${job.job_id} needs at least ${budget.minBullets} bullets to fill the page.`));
+    }
+    if (job.bullets.length > budget.maxBullets) {
+      issues.push(issue("job_over_max_bullets", `work_experience.${jobIndex}.bullets`, `${job.job_id} allows at most ${budget.maxBullets} bullets.`));
     }
     job.bullets.forEach((bullet, bulletIndex) => validateBullet(bullet, `work_experience.${jobIndex}.bullets.${bulletIndex}`, evidenceIds, issues, context));
   });
 
   const projectBudget = getProjectBudget(context);
-  if (resume.projects.length < projectBudget.minProjects || resume.projects.length > projectBudget.maxProjects) {
-    issues.push(issue("project_count", "projects", `Projects section requires ${projectBudget.minProjects}-${projectBudget.maxProjects} projects.`));
+  if (resume.projects.length < projectBudget.minProjects) {
+    issues.push(issue("project_count", "projects", `Projects section requires at least ${projectBudget.minProjects} project.`));
+  }
+  if (resume.projects.length > projectBudget.maxProjects) {
+    issues.push(issue("project_count", "projects", `Projects section allows at most ${projectBudget.maxProjects} projects.`));
+  }
+
+  const totalProjectBullets = resume.projects.reduce((total, project) => total + project.bullets.length, 0);
+  if (totalProjectBullets < projectBudget.minTotalBullets) {
+    issues.push(issue("project_under_min_bullets", "projects", `Projects need at least ${projectBudget.minTotalBullets} total bullets to use the page well.`));
+  }
+  if (totalProjectBullets > projectBudget.maxTotalBullets) {
+    issues.push(issue("project_over_max_bullets", "projects", `Projects allow at most ${projectBudget.maxTotalBullets} total bullets.`));
   }
 
   resume.projects.forEach((project, projectIndex) => {
     if (!allowedProjects.has(project.project_id)) {
       issues.push(issue("invalid_project_id", `projects.${projectIndex}.project_id`, `Invalid project id '${project.project_id}'.`));
     }
-    if (project.bullets.length < projectBudget.bulletsPerProject.minBullets || project.bullets.length > projectBudget.bulletsPerProject.maxBullets) {
-      issues.push(issue("project_bullet_count", `projects.${projectIndex}.bullets`, `Each project requires ${projectBudget.bulletsPerProject.minBullets}-${projectBudget.bulletsPerProject.maxBullets} bullets.`));
+    if (project.bullets.length < projectBudget.bulletsPerProject.minBullets) {
+      issues.push(issue("project_under_min_bullets", `projects.${projectIndex}.bullets`, `Each selected project needs at least ${projectBudget.bulletsPerProject.minBullets} bullet.`));
+    }
+    if (project.bullets.length > projectBudget.bulletsPerProject.maxBullets) {
+      issues.push(issue("project_over_max_bullets", `projects.${projectIndex}.bullets`, `Each selected project allows at most ${projectBudget.bulletsPerProject.maxBullets} bullets.`));
     }
     project.bullets.forEach((bullet, bulletIndex) => validateBullet(bullet, `projects.${projectIndex}.bullets.${bulletIndex}`, evidenceIds, issues, context));
     project.alternates.forEach((alternate, alternateIndex) => {
@@ -222,6 +270,11 @@ export function validateGeneratedResume(
   if (resume.skills.length > skillsBudget.maxItems) {
     issues.push(issue("skills_over_item_budget", "skills", `Skills section has ${resume.skills.length} items; max is ${skillsBudget.maxItems}.`));
   }
+  resume.skills.forEach((skill, skillIndex) => {
+    if (isDisallowedStandaloneSkill(skill)) {
+      issues.push(issue("disallowed_generic_skill", `skills.${skillIndex}`, `Skill '${skill}' should be covered through specific tools or bullets instead of listed as a standalone skill.`));
+    }
+  });
 
   const claimText = [
     skillText,
@@ -230,10 +283,22 @@ export function validateGeneratedResume(
   ].join(" ").toLowerCase();
 
   for (const term of collectUnsupportedTerms(candidate, context)) {
-    if (term.length >= 3 && includesTerm(claimText, term) && !evidenceSupportsKeyword(term, context.evidenceCards)) {
+    if (term.length >= 3 && includesTerm(claimText, term) && !evidenceSupportsClaim(term, context.evidenceCards)) {
       issues.push(issue("unsupported_claim", "resume", `Unsupported JD term '${term}' appears as a resume claim.`));
     }
   }
 
-  return { success: issues.length === 0, valid: issues.length === 0, resume, issues };
+  const fitReport = calculateResumeFitReport(resume, context.profile, { page: getPageBudget(context) });
+  const pageBudget = getPageBudget(context);
+  if (fitReport.total_bullets < pageBudget.minTotalBullets) {
+    issues.push(issue("resume_under_target_length", "resume", `Resume has ${fitReport.total_bullets} bullets; target density requires at least ${pageBudget.minTotalBullets}.`));
+  }
+  if (fitReport.status === "under_target") {
+    issues.push(issue("resume_under_target_length", "resume", `Resume estimates to ${fitReport.estimated_lines} lines (${fitReport.estimated_fill_percent}% of target); minimum target is ${fitReport.target_min_lines} lines.`));
+  }
+  if (fitReport.status === "over_hard_max") {
+    issues.push(issue("resume_over_hard_max", "resume", `Resume estimates to ${fitReport.estimated_lines} lines; hard one-page maximum is ${fitReport.hard_max_lines}.`));
+  }
+
+  return { success: issues.length === 0, valid: issues.length === 0, resume, fit_report: fitReport, issues };
 }

@@ -70,6 +70,29 @@ export interface KeywordReport {
   covered_in_skills_only: string[];
   supported_but_omitted_for_space: string[];
   unsupported: string[];
+  details?: KeywordReportItem[];
+}
+
+export interface KeywordReportItem {
+  term: string;
+  canonical: string;
+  status: "covered_in_bullets" | "covered_in_skills_only" | "supported_but_omitted_for_space" | "alternative_satisfied" | "unsupported";
+  support_level: "bullet" | "resume_skill" | "contextual_evidence" | "skill_list_only" | "synonym_only" | "alternative_satisfied" | "unsupported";
+  evidence_refs: string[];
+  matched_terms: string[];
+  placement_recommendation: "prefer_bullet" | "skill_ok" | "omit" | "needs_source_update";
+}
+
+export interface ResumeFitReport {
+  estimated_lines: number;
+  target_min_lines: number;
+  target_max_lines: number;
+  hard_max_lines: number;
+  estimated_fill_percent: number;
+  total_bullets: number;
+  work_bullets: number;
+  project_bullets: number;
+  status: "under_target" | "target" | "over_target" | "over_hard_max";
 }
 
 export interface GeneratedResume {
@@ -99,6 +122,8 @@ export interface GenerateResumeRequest {
 export interface GenerateResumeResponse {
   resume: GeneratedResume;
   keywordReport?: KeywordReport;
+  fitReport?: ResumeFitReport;
+  mode?: "mock" | "llm";
   validationIssues?: ValidationIssue[];
 }
 

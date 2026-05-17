@@ -1,7 +1,15 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { GenerateResumeRequestSchema, GeneratedResumeSchema, scoreKeywords, validateGeneratedResume, type ValidationIssue } from "../shared";
+import {
+  GenerateResumeRequestSchema,
+  GeneratedResumeSchema,
+  curateGeneratedResumeSkills,
+  scoreKeywords,
+  termsProhibitedAsClaims,
+  validateGeneratedResume,
+  type ValidationIssue
+} from "../shared";
 import { parseDocxBuffer } from "./evidenceParser";
 import { getLlmConfig, callOpenAiCompatibleJson } from "./llmProvider";
 import { generateMockResume } from "./mockGenerator";
@@ -10,6 +18,7 @@ import { loadResumeProfile } from "./profile";
 
 const app = express();
 const port = Number(process.env.SERVER_PORT ?? process.env.PORT ?? 3001);
+const MAX_LLM_REPAIR_ATTEMPTS = 2;
 
 app.use(cors());
 app.use(express.json({ limit: "12mb" }));
@@ -18,12 +27,36 @@ function errorIssue(code: string, message: string, path = "$"): ValidationIssue 
   return { code, path, message, severity: "error" };
 }
 
+function prepareGeneratedCandidate(rawOutput: unknown) {
+  const schemaCheck = GeneratedResumeSchema.safeParse(rawOutput);
+  if (!schemaCheck.success) {
+    return { rawOutput, schemaCheck };
+  }
+
+  const curated = curateGeneratedResumeSkills(schemaCheck.data);
+  return {
+    rawOutput: curated,
+    schemaCheck: GeneratedResumeSchema.safeParse(curated)
+  };
+}
+
 app.get("/api/profile", async (_req, res) => {
   try {
     res.json(await loadResumeProfile());
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Failed to load profile." });
   }
+});
+
+app.get("/api/status", (_req, res) => {
+  const llmConfig = getLlmConfig();
+  res.json({
+    ok: true,
+    mode: llmConfig.apiKey ? "llm" : "mock",
+    model: llmConfig.model,
+    base_url: llmConfig.baseUrl,
+    has_api_key: Boolean(llmConfig.apiKey)
+  });
 });
 
 app.post("/api/parse-evidence", async (req, res) => {
@@ -67,23 +100,27 @@ app.post("/api/generate-resume", async (req, res) => {
       ], llmConfig);
     }
 
-    let schemaCheck = GeneratedResumeSchema.safeParse(rawOutput);
+    let prepared = prepareGeneratedCandidate(rawOutput);
+    rawOutput = prepared.rawOutput;
+    let schemaCheck = prepared.schemaCheck;
     let keywordReport = schemaCheck.success
       ? scoreKeywords(request.job_description, schemaCheck.data, request.evidence_cards)
       : undefined;
-    let validation = validateGeneratedResume(rawOutput, request.evidence_cards, effectiveProfile, keywordReport?.unsupported ?? [], request.allowed_project_ids);
+    let validation = validateGeneratedResume(rawOutput, request.evidence_cards, effectiveProfile, termsProhibitedAsClaims(keywordReport), request.allowed_project_ids);
 
-    if (validation.issues.length > 0 && mode === "llm") {
+    for (let attempt = 0; validation.issues.length > 0 && mode === "llm" && attempt < MAX_LLM_REPAIR_ATTEMPTS; attempt += 1) {
       rawOutput = await callOpenAiCompatibleJson([
         { role: "system", content: buildSystemPrompt() },
         { role: "user", content: buildUserPrompt(request, effectiveProfile) },
         { role: "user", content: buildRepairPrompt(rawOutput, validation.issues, request.evidence_cards) }
       ], llmConfig);
-      schemaCheck = GeneratedResumeSchema.safeParse(rawOutput);
+      prepared = prepareGeneratedCandidate(rawOutput);
+      rawOutput = prepared.rawOutput;
+      schemaCheck = prepared.schemaCheck;
       keywordReport = schemaCheck.success
         ? scoreKeywords(request.job_description, schemaCheck.data, request.evidence_cards)
         : undefined;
-      validation = validateGeneratedResume(rawOutput, request.evidence_cards, effectiveProfile, keywordReport?.unsupported ?? [], request.allowed_project_ids);
+      validation = validateGeneratedResume(rawOutput, request.evidence_cards, effectiveProfile, termsProhibitedAsClaims(keywordReport), request.allowed_project_ids);
     }
 
     if (!validation.resume || validation.issues.length > 0) {
@@ -96,6 +133,8 @@ app.post("/api/generate-resume", async (req, res) => {
       resume: validation.resume,
       keyword_report: keywordReport ?? scoreKeywords(request.job_description, validation.resume, request.evidence_cards),
       keywordReport: keywordReport ?? scoreKeywords(request.job_description, validation.resume, request.evidence_cards),
+      fit_report: validation.fit_report,
+      fitReport: validation.fit_report,
       validation_issues: [],
       validationIssues: [],
       mode
