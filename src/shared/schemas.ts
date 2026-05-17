@@ -66,13 +66,66 @@ export const GeneratedBulletSchema = z.object({
 });
 export type GeneratedBullet = z.infer<typeof GeneratedBulletSchema>;
 
+export const KeywordSupportLevelSchema = z.enum([
+  "bullet",
+  "resume_skill",
+  "contextual_evidence",
+  "skill_list_only",
+  "synonym_only",
+  "alternative_satisfied",
+  "unsupported"
+]);
+export type KeywordSupportLevel = z.infer<typeof KeywordSupportLevelSchema>;
+
+export const KeywordPlacementRecommendationSchema = z.enum([
+  "prefer_bullet",
+  "skill_ok",
+  "omit",
+  "needs_source_update"
+]);
+export type KeywordPlacementRecommendation = z.infer<typeof KeywordPlacementRecommendationSchema>;
+
+export const KeywordStatusSchema = z.enum([
+  "covered_in_bullets",
+  "covered_in_skills_only",
+  "supported_but_omitted_for_space",
+  "alternative_satisfied",
+  "unsupported"
+]);
+export type KeywordStatus = z.infer<typeof KeywordStatusSchema>;
+
+export const KeywordReportItemSchema = z.object({
+  term: z.string().min(1),
+  canonical: z.string().min(1),
+  status: KeywordStatusSchema,
+  support_level: KeywordSupportLevelSchema,
+  evidence_refs: z.array(z.string().min(1)).default([]),
+  matched_terms: z.array(z.string().min(1)).default([]),
+  placement_recommendation: KeywordPlacementRecommendationSchema
+});
+export type KeywordReportItem = z.infer<typeof KeywordReportItemSchema>;
+
 export const KeywordReportSchema = z.object({
   covered_in_bullets: z.array(z.string()),
   covered_in_skills_only: z.array(z.string()),
   supported_but_omitted_for_space: z.array(z.string()),
-  unsupported: z.array(z.string())
+  unsupported: z.array(z.string()),
+  details: z.array(KeywordReportItemSchema).default([])
 });
 export type KeywordReport = z.infer<typeof KeywordReportSchema>;
+
+export const ResumeFitReportSchema = z.object({
+  estimated_lines: z.number().int().nonnegative(),
+  target_min_lines: z.number().int().nonnegative(),
+  target_max_lines: z.number().int().nonnegative(),
+  hard_max_lines: z.number().int().nonnegative(),
+  estimated_fill_percent: z.number().nonnegative(),
+  total_bullets: z.number().int().nonnegative(),
+  work_bullets: z.number().int().nonnegative(),
+  project_bullets: z.number().int().nonnegative(),
+  status: z.enum(["under_target", "target", "over_target", "over_hard_max"])
+});
+export type ResumeFitReport = z.infer<typeof ResumeFitReportSchema>;
 
 const GeneratedSkillSchema = z.union([
   z.string().min(1),
@@ -149,6 +202,7 @@ export const GenerateResumeResponseSchema = z.discriminatedUnion("ok", [
     ok: z.literal(true),
     resume: GeneratedResumeSchema,
     keyword_report: KeywordReportSchema,
+    fit_report: ResumeFitReportSchema.optional(),
     validation_issues: z.array(ValidationIssueSchema).default([]),
     mode: z.enum(["mock", "llm"])
   }),
