@@ -78,7 +78,8 @@ describe("keyword synonym classification contract", () => {
     }) as KeywordReport;
 
     expect(report.covered_in_bullets).toEqual(expect.arrayContaining(["OOP", "vector search"]));
-    expect(report.covered_in_skills_only).toEqual(expect.arrayContaining(["CI/CD", "cloud monitoring", "IaC"]));
+    expect(report.covered_in_skills_only).toEqual(expect.arrayContaining(["IaC"]));
+    expect(report.supported_but_omitted_for_space).toEqual(expect.arrayContaining(["CI/CD", "cloud monitoring"]));
     expect(report.unsupported).toEqual(expect.arrayContaining(["Kubernetes", "GraphQL"]));
   });
 
@@ -195,6 +196,87 @@ Automated testing frameworks such as Karate, Playwright, Cypress, Selenium.
     expect(detail("Selenium")?.support_level).toBe("alternative_satisfied");
     expect(detail("Karate")?.support_level).toBe("alternative_satisfied");
     expect(detail("XP")?.support_level).toBe("alternative_satisfied");
+  });
+
+  runKeywordTest("marks skill-list-only bullet concepts as needing source detail", () => {
+    expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
+      .toBeTypeOf("function");
+
+    const report = classifyKeywords?.({
+      jobDescription: "Need object-oriented design and automated testing.",
+      generatedResume: null,
+      evidenceCards: [
+        {
+          id: "consolidated_skills_keywords",
+          type: "skill_fact",
+          title: "Consolidated skills and keywords",
+          evidence_text: "SOLID, Object-Oriented, automated testing, Jest, pytest.",
+          skills: ["SOLID", "Object-Oriented", "automated testing", "Jest", "pytest"],
+        },
+      ],
+    }) as KeywordReport;
+
+    const objectOriented = report.details?.find((item) => item.canonical === "Object-Oriented");
+    const testing = report.details?.find((item) => item.canonical === "automated testing");
+
+    expect(objectOriented?.support_level).toBe("skill_list_only");
+    expect(objectOriented?.placement_recommendation).toBe("needs_source_update");
+    expect(testing?.support_level).toBe("skill_list_only");
+    expect(testing?.placement_recommendation).toBe("needs_source_update");
+  });
+
+  runKeywordTest("recognizes bullet coverage for algorithms, design patterns, and user interfaces", () => {
+    expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
+      .toBeTypeOf("function");
+
+    const report = classifyKeywords?.({
+      jobDescription: "Need object-oriented design, algorithms, design patterns, and responsive user interfaces.",
+      generatedResume: {
+        skills: ["JavaScript", "React", "C#"],
+        work_experience: [
+          {
+            bullets: [
+              { text: "Built a React TypeScript responsive UI for a serverless dashboard." },
+              { text: "Built a Golang regret-insertion route optimization algorithm for live itinerary recommendations." },
+            ],
+          },
+        ],
+        projects: [
+          {
+            bullets: [
+              { text: "Implemented C# gameplay with state machine, command pattern, and factory pattern design." },
+            ],
+          },
+        ],
+      },
+      evidenceCards: [
+        {
+          id: "ui_fact",
+          type: "work_project_fact",
+          evidence_text: "React TypeScript responsive user interface work.",
+          skills: ["React", "TypeScript", "responsive user interfaces"],
+        },
+        {
+          id: "algorithm_fact",
+          type: "work_project_fact",
+          evidence_text: "Golang regret insertion route optimization algorithm.",
+          skills: ["Golang", "algorithms", "route optimization"],
+        },
+        {
+          id: "patterns_fact",
+          type: "project_fact",
+          evidence_text: "C# state machine, command pattern, and factory pattern implementation.",
+          skills: ["C#", "state machine", "command pattern", "factory pattern"],
+        },
+      ],
+    }) as KeywordReport;
+
+    const detail = (canonical: string) => report.details?.find((item) => item.canonical === canonical);
+
+    expect(detail("Object-Oriented")?.status).toBe("covered_in_bullets");
+    expect(detail("algorithms")?.status).toBe("covered_in_bullets");
+    expect(detail("design patterns")?.status).toBe("covered_in_bullets");
+    expect(detail("user interfaces")?.status).toBe("covered_in_bullets");
   });
 
   runKeywordTest("does not satisfy exact tools from alternatives without an active example group", () => {

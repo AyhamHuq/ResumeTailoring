@@ -15,6 +15,7 @@ import { generateResume } from "./lib/api";
 import { classifyKeywords } from "./lib/keywords";
 import { loadState, saveState } from "./lib/storage";
 import { STATIC_PROFILE } from "./lib/profile";
+import { curateSkills } from "../shared/skills";
 import type {
   AppState,
   EvidenceCard,
@@ -45,10 +46,19 @@ export function App() {
 
   const generationKey = `${state.roleMode}:${state.jobDescription.trim()}`;
   const needsRegeneration = Boolean(state.generatedResume && state.lastGeneratedKey !== generationKey);
+  const displayResume = useMemo(
+    () => state.generatedResume
+      ? {
+        ...state.generatedResume,
+        skills: curateSkills(state.generatedResume.skills, undefined, { jobDescription: state.jobDescription })
+      }
+      : null,
+    [state.generatedResume, state.jobDescription],
+  );
 
   const keywordReport = useMemo(
-    () => classifyKeywords(state.jobDescription, state.generatedResume, state.evidenceCards),
-    [state.jobDescription, state.generatedResume, state.evidenceCards],
+    () => classifyKeywords(state.jobDescription, displayResume, state.evidenceCards),
+    [state.jobDescription, displayResume, state.evidenceCards],
   );
 
   async function handleBraindumpText(text: string, sourceName: string) {
@@ -150,8 +160,9 @@ export function App() {
             />
             <ExportButton
               profile={STATIC_PROFILE}
-              resume={state.generatedResume}
+              resume={displayResume}
               evidenceCards={state.evidenceCards}
+              jobDescription={state.jobDescription}
             />
           </div>
 
@@ -172,8 +183,9 @@ export function App() {
 
           <ResumePreview
             profile={STATIC_PROFILE}
-            resume={state.generatedResume}
+            resume={displayResume}
             evidenceCards={state.evidenceCards}
+            jobDescription={state.jobDescription}
             onSelectBullet={setSelectedBullet}
           />
         </section>
@@ -181,7 +193,7 @@ export function App() {
         <aside className="right-rail">
           <KeywordEvidencePanel report={keywordReport} />
           <ProjectPreview
-            resume={state.generatedResume}
+            resume={displayResume}
             evidenceCards={state.evidenceCards}
             onResumeChange={setGeneratedResume}
           />

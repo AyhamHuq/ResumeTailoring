@@ -1,6 +1,17 @@
 import { EvidenceCardSchema, type EvidenceCard, type JobId, type RoleMode } from "./schemas";
 
 const REQUIRED_SECTIONS = ["CapTech Ventures", "Publicis Sapient", "Sallie Mae", "Additional Projects"] as const;
+const SKILL_SECTION = "Consolidated Skills and Keywords";
+const SKILL_TERMS = [
+  "AWS", "Lambda", "API Gateway", "SQS", "SNS", "DynamoDB", "Kinesis", "Spring", "Spring Boot",
+  "Java", "Golang", "Python", "TypeScript", "JavaScript", "ES6+", "ES6", "React", "React Native",
+  "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "NLP", "C#", "Flask", "RESTful APIs",
+  "RESTful API", "REST APIs", "REST API", "RESTful", "Azure SQL", "SQLite", "CloudFormation",
+  "CDK", "Ansible", "Jenkins", "GitHub Actions", "TeamCity", "Azure DevOps", "Vercel", "Docker", "Git",
+  "CloudWatch", "CloudWatch Logs", "CloudWatch Insights", "CloudWatch alarms", "Athena", "Glue", "IAM", "Jest",
+  "pytest", "JUnit", "Playwright", "Cypress", "Selenium", "Karate", "Postman", "Scrum", "Agile", "Scaled Agile",
+  "CI/CD", "test automation", "automated testing", "unit testing", "OOP", "SOLID", "WCAG 2.2"
+];
 
 type KnownFact = {
   id: string;
@@ -28,6 +39,28 @@ const KNOWN_FACTS: KnownFact[] = [
     role_tags: ["backend", "cloud", "consulting"]
   },
   {
+    id: "captech_f100_spring_lambda_dynamodb",
+    type: "work_project_fact",
+    title: "Spring, Lambda, DynamoDB, and Maestro messaging integration",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_f100_messaging",
+    required: [/spring/i, /lambda/i, /dynamodb/i, /maestro/i],
+    skills: ["Java", "Spring Boot", "AWS Lambda", "DynamoDB", "Maestro API", "API integration"],
+    role_tags: ["backend", "cloud", "consulting"]
+  },
+  {
+    id: "captech_f100_jenkins_coordination",
+    type: "work_project_fact",
+    title: "Cross-team Jenkins production deployment coordination",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_f100_messaging",
+    required: [/jenkins/i, /production deployment|production release|code freeze/i, /3 teams|three teams|cross-functional/i],
+    skills: ["Jenkins", "CI/CD", "production deployment", "cross-functional coordination", "change management"],
+    role_tags: ["consulting", "backend", "cloud"]
+  },
+  {
     id: "captech_bedrock_precision_recall",
     type: "work_project_fact",
     title: "Bedrock AI evaluation with precision and recall",
@@ -35,7 +68,29 @@ const KNOWN_FACTS: KnownFact[] = [
     parent_job_id: "captech",
     project_id: "captech_bedrock_ai",
     required: [/bedrock/i, /precision|recall/i],
-    skills: ["Amazon Bedrock", "precision", "recall", "AI evaluation"],
+    skills: ["Amazon Bedrock", "precision", "recall", "metrics", "AI evaluation"],
+    role_tags: ["ai", "cloud", "consulting"]
+  },
+  {
+    id: "captech_bedrock_rag_opensearch",
+    type: "work_project_fact",
+    title: "Bedrock RAG tool with OpenSearch retrieval and reranking",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_bedrock_ai",
+    required: [/bedrock/i, /rag|retrieval/i, /opensearch|vector/i, /rerank/i],
+    skills: ["Amazon Bedrock", "RAG", "OpenSearch", "vector search", "reranking"],
+    role_tags: ["ai", "cloud", "backend"]
+  },
+  {
+    id: "captech_bedrock_multi_agent_eval",
+    type: "work_project_fact",
+    title: "Multi-agent Bedrock evaluation architecture",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_bedrock_ai",
+    required: [/multi-agent|supervisor agent|subagents/i, /bedrock evals|evaluator/i],
+    skills: ["multi-agent architecture", "AWS Bedrock Evals", "semantic similarity", "LLM evaluation"],
     role_tags: ["ai", "cloud", "consulting"]
   },
   {
@@ -51,6 +106,48 @@ const KNOWN_FACTS: KnownFact[] = [
     role_tags: ["backend", "consulting"]
   },
   {
+    id: "captech_golf_algorithm_golang",
+    type: "work_project_fact",
+    title: "Golang regret-insertion itinerary recommendation algorithm",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_golf_itinerary",
+    required: [/golang|go\b/i, /regret insertion|route optimization|recommendation/i, /configuration-driven|swappable|hardcoded/i],
+    skills: ["Golang", "algorithms", "algorithm design", "recommendation systems", "route optimization", "regret insertion heuristic", "configuration-driven design"],
+    role_tags: ["backend", "consulting"]
+  },
+  {
+    id: "captech_golf_serverless_cicd",
+    type: "work_project_fact",
+    title: "Serverless golf itinerary architecture and CI/CD",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_golf_itinerary",
+    required: [/api gateway/i, /lambda/i, /github actions/i, /s3/i],
+    skills: ["React", "TypeScript", "JavaScript", "responsive user interfaces", "AWS Lambda", "API Gateway", "S3", "Docker", "Git", "GitHub Actions", "CI/CD", "deployment pipelines", "Playwright", "automated testing"],
+    role_tags: ["full_stack", "cloud", "backend"]
+  },
+  {
+    id: "captech_coffee_dashboard_accessibility",
+    type: "project_fact",
+    title: "Coffee shop analytics dashboard with accessibility and forecasting",
+    section: "CapTech Ventures",
+    project_id: "coffee_dashboard",
+    required: [/coffee shop|cafe/i, /react/i, /lambda|api gateway/i, /wcag|linear regression|forecasting/i],
+    skills: ["React", "JavaScript", "responsive user interfaces", "Python", "AWS Lambda", "API Gateway", "S3", "CDK", "SQLite", "linear regression", "WCAG 2.2"],
+    role_tags: ["full_stack", "cloud", "backend"]
+  },
+  {
+    id: "captech_coffee_dashboard_kpis",
+    type: "project_fact",
+    title: "Coffee shop KPI, inventory, and forecasting dashboard",
+    section: "CapTech Ventures",
+    project_id: "coffee_dashboard",
+    required: [/daily revenue|profit margins|inventory/i, /low stock|sales tracking/i, /forecasting|linear regression/i],
+    skills: ["React", "Python", "SQLite", "data analytics", "linear regression", "analytics dashboard", "inventory tracking", "metrics", "alerts"],
+    role_tags: ["full_stack", "backend", "cloud"]
+  },
+  {
     id: "publicis_langchain_rag",
     type: "work_project_fact",
     title: "LangChain RAG internship project",
@@ -60,6 +157,39 @@ const KNOWN_FACTS: KnownFact[] = [
     required: [/langchain/i, /\brag\b|retrieval/i],
     skills: ["LangChain", "RAG", "retrieval", "LLM"],
     role_tags: ["ai", "backend", "consulting"]
+  },
+  {
+    id: "publicis_healthcare_predictive_app",
+    type: "work_project_fact",
+    title: "Healthcare plan recommendation app for Fortune 25 client",
+    section: "Publicis Sapient",
+    parent_job_id: "publicis_sapient",
+    project_id: "publicis_healthcare_app",
+    required: [/fortune 25|healthcare/i, /recommendations|predictive|savings/i],
+    skills: ["healthcare analytics", "predictive recommendations", "client presentation", "Agile", "user interfaces"],
+    role_tags: ["consulting", "full_stack"]
+  },
+  {
+    id: "publicis_flask_azure_sql_backend",
+    type: "work_project_fact",
+    title: "Flask REST backend with Azure SQL integration",
+    section: "Publicis Sapient",
+    parent_job_id: "publicis_sapient",
+    project_id: "publicis_healthcare_app",
+    required: [/flask/i, /rest api|backend/i, /azure sql|schema/i],
+    skills: ["Python", "Flask", "REST APIs", "Azure SQL", "schema design", "React Native"],
+    role_tags: ["backend", "full_stack"]
+  },
+  {
+    id: "publicis_solid_testing_cicd",
+    type: "work_project_fact",
+    title: "SOLID backend design, tests, and CI/CD",
+    section: "Publicis Sapient",
+    parent_job_id: "publicis_sapient",
+    project_id: "publicis_healthcare_app",
+    required: [/solid/i, /jest|pytest/i, /vercel|ci\/cd/i],
+    skills: ["SOLID", "object-oriented design", "Jest", "pytest", "Vercel", "CI/CD", "automated testing", "unit testing", "Agile"],
+    role_tags: ["backend", "full_stack"]
   },
   {
     id: "sallie_mae_200_accounts",
@@ -74,6 +204,51 @@ const KNOWN_FACTS: KnownFact[] = [
     role_tags: ["cloud", "consulting"]
   },
   {
+    id: "sallie_mae_config_sns_centralization",
+    type: "work_project_fact",
+    title: "AWS Config SNS centralization into S3 and CloudWatch Logs",
+    section: "Sallie Mae",
+    parent_job_id: "sallie_mae",
+    project_id: "sallie_mae_cloud",
+    required: [/aws config/i, /sns/i, /s3/i, /cloudwatch logs/i],
+    skills: ["AWS Config", "SNS", "S3", "CloudWatch Logs", "CloudWatch alarms", "Python", "boto3", "logging", "cloud monitoring", "monitoring", "alerts"],
+    metrics: ["1,000+ daily emails", "~200 accounts"],
+    role_tags: ["cloud", "backend"]
+  },
+  {
+    id: "sallie_mae_cross_account_iam",
+    type: "work_project_fact",
+    title: "Cross-account IAM trust and least-privilege logging writes",
+    section: "Sallie Mae",
+    parent_job_id: "sallie_mae",
+    project_id: "sallie_mae_cloud",
+    required: [/cross-account/i, /iam/i, /least-privilege/i],
+    skills: ["IAM", "cross-account trust policies", "least-privilege IAM", "security"],
+    role_tags: ["cloud", "consulting"]
+  },
+  {
+    id: "sallie_mae_ansible_cloudformation",
+    type: "work_project_fact",
+    title: "Ansible and CloudFormation production infrastructure automation",
+    section: "Sallie Mae",
+    parent_job_id: "sallie_mae",
+    project_id: "sallie_mae_cloud",
+    required: [/ansible/i, /cloudformation/i, /athena|glue/i],
+    skills: ["Ansible", "CloudFormation", "YAML", "Athena", "Glue", "data analytics", "infrastructure as code"],
+    role_tags: ["cloud", "backend"]
+  },
+  {
+    id: "sallie_mae_production_servicenow",
+    type: "work_project_fact",
+    title: "ServiceNow production deployment and adoption",
+    section: "Sallie Mae",
+    parent_job_id: "sallie_mae",
+    project_id: "sallie_mae_cloud",
+    required: [/servicenow/i, /production deployment|deployed to production/i, /adopted/i],
+    skills: ["ServiceNow", "production deployment", "Azure DevOps", "Scaled Agile"],
+    role_tags: ["cloud", "consulting"]
+  },
+  {
     id: "aep_pytorch_faiss_20000_records",
     type: "project_fact",
     title: "AEP AI safety classifier with FAISS retrieval",
@@ -85,13 +260,44 @@ const KNOWN_FACTS: KnownFact[] = [
     role_tags: ["ai", "full_stack"]
   },
   {
+    id: "aep_hackathon_second_place",
+    type: "project_fact",
+    title: "AEP hackathon second-place AI safety solution",
+    section: "Additional Projects",
+    project_id: "aep_ai_safety",
+    required: [/aep/i, /2nd|second/i, /17 teams|800\+|800 participants/i],
+    skills: ["hackathon", "AI safety classification", "demo execution", "team project"],
+    metrics: ["2nd place", "17 teams", "800+ participants"],
+    role_tags: ["ai", "consulting", "full_stack"]
+  },
+  {
+    id: "aep_react_native_flask_sqlite",
+    type: "project_fact",
+    title: "AEP React Native, Flask, and SQLite application workflow",
+    section: "Additional Projects",
+    project_id: "aep_ai_safety",
+    required: [/react native/i, /flask/i, /sqlite/i],
+    skills: ["React Native", "Flask", "SQLite", "cross-platform app development"],
+    role_tags: ["full_stack", "ai", "backend"]
+  },
+  {
     id: "mario_collision_state_command_factory",
     type: "project_fact",
     title: "MonoGame Mario collision and design pattern architecture",
     section: "Additional Projects",
     project_id: "mario_monogame",
     required: [/mario|monogame/i, /collision/i, /state/i, /command|factory/i],
-    skills: ["C#", "MonoGame", "collision", "state machine", "command pattern", "factory pattern"],
+    skills: ["C#", "MonoGame", "OOP", "object-oriented design", "design patterns", "collision", "state machine", "command pattern", "factory pattern"],
+    role_tags: ["backend", "full_stack"]
+  },
+  {
+    id: "mario_physics_enemy_save_systems",
+    type: "project_fact",
+    title: "MonoGame player physics, enemies, save system, and game state behavior",
+    section: "Additional Projects",
+    project_id: "mario_monogame",
+    required: [/mario|monogame/i, /player physics|physics/i, /enemy|save system|game state/i],
+    skills: ["C#", "MonoGame", "player physics", "enemy systems", "save system", "game state"],
     role_tags: ["backend", "full_stack"]
   }
 ];
@@ -158,10 +364,50 @@ function genericCardsForSection(section: string, sectionText: string): EvidenceC
     }));
 }
 
+function dedupePreserveCase(values: string[]): string[] {
+  const seen = new Set<string>();
+  const output: string[] = [];
+  for (const value of values) {
+    const key = value.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      output.push(value);
+    }
+  }
+  return output;
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function textContainsSkill(text: string, skill: string): boolean {
+  const pattern = escapeRegex(skill.toLowerCase()).replace(/\s+/g, "\\s+");
+  return new RegExp(`(^|[^a-z0-9])${pattern}(?=$|[^a-z0-9])`, "i").test(text.toLowerCase());
+}
+
+function consolidatedSkillCards(text: string): EvidenceCard[] {
+  const sectionText = getSectionText(text, SKILL_SECTION);
+  if (!sectionText) {
+    return [];
+  }
+
+  return [
+    EvidenceCardSchema.parse({
+      id: "consolidated_skills_keywords",
+      type: "skill_fact",
+      title: "Consolidated skills and keywords",
+      evidence_text: sectionText.slice(0, 1200),
+      skills: extractSkills(sectionText),
+      metrics: extractMetrics(sectionText),
+      role_tags: inferRoleTags(sectionText),
+      source_heading: SKILL_SECTION
+    })
+  ];
+}
+
 function extractSkills(text: string): string[] {
-  const skills = ["AWS", "Lambda", "SQS", "DynamoDB", "Spring", "Java", "Python", "TypeScript", "React", "LangChain", "RAG", "FAISS", "PyTorch", "C#", "CloudFormation", "CDK", "Ansible", "Jenkins", "GitHub Actions", "Vercel", "CloudWatch"];
-  const lower = text.toLowerCase();
-  return skills.filter((skill) => lower.includes(skill.toLowerCase()));
+  return dedupePreserveCase(SKILL_TERMS.filter((skill) => textContainsSkill(text, skill)));
 }
 
 function extractMetrics(text: string): string[] {
@@ -183,6 +429,8 @@ export function parseEvidenceCards(rawText: string): EvidenceCard[] {
   const text = normalizeText(rawText);
   assertRequiredSections(text);
   const cards: EvidenceCard[] = [];
+
+  cards.push(...consolidatedSkillCards(text));
 
   for (const fact of KNOWN_FACTS) {
     const sectionText = getSectionText(text, fact.section);

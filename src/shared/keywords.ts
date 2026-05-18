@@ -37,7 +37,13 @@ const BASE_KNOWN_TERMS = [
   "Agile", "Scaled Agile", "Playwright", "Cypress", "Selenium", "Karate", "XP", "ES6+", "ES6",
   "automated testing", "test automation", "automated tests", "unit testing", "cloud monitoring", "alarms",
   "logging", "tracing", "IaC", "infrastructure as code", "CloudFormation", "CDK", "Ansible", "accessibility",
-  "serverless", "microservices", "APIs", "SQL", "SQLite", "Kubernetes", "GraphQL"
+  "serverless", "microservices", "APIs", "SQL", "SQLite", "Kubernetes", "GraphQL", "Git",
+  "source control", "source control management", "deployment pipelines", "build processes",
+  "configuration and deployment management", "deployment management", "public cloud services",
+  "containerized systems", "data analytics", "analytics", "metrics", "monitors", "monitoring",
+  "alerts", "instrumentation", "operational excellence", "CloudWatch alarms", "Athena", "Glue",
+  "Pandas", "NumPy", "linear regression", "forecasting", "KPI dashboard", "code reviews",
+  "coding standards", "root cause", "production issues", "debugging", "data structures"
 ];
 
 const KNOWN_TERMS = dedupePreserveCase([...BASE_KNOWN_TERMS, ...TAXONOMY_KNOWN_TERMS]);
@@ -312,8 +318,11 @@ function placementForSupport(keyword: string, supportLevel: KeywordSupportLevel)
   if (supportLevel === "unsupported" || supportLevel === "alternative_satisfied") {
     return "omit";
   }
+  if (supportLevel === "skill_list_only") {
+    return terms.placement === "prefer_bullet" ? "needs_source_update" : terms.placement;
+  }
   if (supportLevel === "synonym_only") {
-    return terms.placement === "skill_ok" ? "needs_source_update" : terms.placement;
+    return terms.placement === "omit" ? "omit" : "needs_source_update";
   }
   return terms.placement;
 }
@@ -333,7 +342,7 @@ function classifyWithoutAlternatives(
   if (bulletMatches.length > 0) {
     supportLevel = "bullet";
     matchedTerms = bulletMatches;
-  } else if (skillMatches.length > 0) {
+  } else if (skillMatches.length > 0 && terms.placement !== "prefer_bullet") {
     supportLevel = "resume_skill";
     matchedTerms = skillMatches;
   } else {

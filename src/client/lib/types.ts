@@ -28,6 +28,7 @@ export interface StaticProfile {
     degree: string;
     graduation: string;
     gpa?: string;
+    coursework?: string[];
   }>;
   certifications: string[];
   role_modes: RoleMode[];
@@ -65,6 +66,16 @@ export interface GeneratedProject {
   alternates?: string[];
 }
 
+export interface CoveragePlanEntry {
+  target_term: string;
+  canonical?: string;
+  selected_evidence_refs: string[];
+  section: "work_experience" | "projects";
+  bullet_index: number;
+  job_id?: string;
+  project_id?: string;
+}
+
 export interface KeywordReport {
   covered_in_bullets: string[];
   covered_in_skills_only: string[];
@@ -98,6 +109,7 @@ export interface ResumeFitReport {
 export interface GeneratedResume {
   role_mode?: RoleMode;
   summary?: string;
+  coverage_plan?: CoveragePlanEntry[];
   skills: string[];
   work_experience: GeneratedWorkExperience[];
   projects: GeneratedProject[];

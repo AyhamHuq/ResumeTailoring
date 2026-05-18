@@ -29,10 +29,21 @@ export async function generateResume(request: GenerateResumeRequest): Promise<Ge
     throw new Error("Generation API returned an invalid response: missing resume.");
   }
 
+  const validationIssues = normalizeIssues(body.validation_issues ?? body.validationIssues);
+  if (body.mode === "mock") {
+    validationIssues.push({
+      severity: "warning",
+      code: "mock_generation_mode",
+      message: "Running in mock mode because LLM_API_KEY is not configured; generated resumes are deterministic test data."
+    });
+  }
+
   return {
     resume: body.resume,
     keywordReport: body.keyword_report ?? body.keywordReport,
-    validationIssues: normalizeIssues(body.validation_issues ?? body.validationIssues)
+    fitReport: body.fit_report ?? body.fitReport,
+    mode: body.mode,
+    validationIssues
   };
 }
 
