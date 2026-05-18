@@ -50,7 +50,7 @@ describe("evidence parsing contract", () => {
 
     const cards = cardList(parseEvidence?.(`
 # Consolidated Skills and Keywords
-AWS Lambda, SQS, DynamoDB, Spring, React, PyTorch, FAISS, SOLID, command pattern.
+AWS Lambda, SQS, DynamoDB, Spring, React, Kotlin, Android, Jetpack Compose, MVVM, LiveData, PyTorch, FAISS, SOLID, command pattern.
 
 # CapTech Ventures
 ## Fortune 100 Direct Messaging Migration
@@ -69,11 +69,14 @@ Supported almost 200 cloud accounts and CloudWatch monitoring work.
 Trained a PyTorch classifier on 20,000 incident records with FAISS retrieval.
 ## Mario MonoGame
 Implemented collision handling with state, command, and factory patterns.
+## Travel Budgeting App - Kotlin / Plaid API
+Built an Android travel budgeting app with Kotlin, Jetpack Compose, Model-View-ViewModel (MVVM), LiveData, Firebase Authentication, and Plaid API for bank-account linking, trip budgets, expenses, and receipts.
+Role: personally owned backend functionality for categorized spending and receipt tracking.
 `));
 
     expect(cards.length).toBeGreaterThanOrEqual(6);
     expect(cards.find((card) => card.id === "consolidated_skills_keywords")?.skills).toEqual(
-      expect.arrayContaining(["AWS", "Lambda", "SQS", "DynamoDB", "Spring", "React", "PyTorch", "FAISS", "SOLID"]),
+      expect.arrayContaining(["AWS", "Lambda", "SQS", "DynamoDB", "Spring", "React", "Kotlin", "Android", "Jetpack Compose", "MVVM", "LiveData", "PyTorch", "FAISS", "SOLID"]),
     );
     expect(cards.map((card) => card.id)).toEqual(
       expect.arrayContaining([
@@ -83,6 +86,8 @@ Implemented collision handling with state, command, and factory patterns.
         "sallie_mae_200_accounts",
         "aep_pytorch_faiss_20000_records",
         "mario_collision_state_command_factory",
+        "travel_budgeting_kotlin_mvvm_compose",
+        "travel_budgeting_plaid_firebase_auth",
       ]),
     );
   });
@@ -144,6 +149,11 @@ Built React Native, Flask, and SQLite app workflow.
 ## Mario Game Design Project - MonoGame / C#
 Implemented collision handling with state, command, and factory patterns.
 Owned player physics, enemies, save system, and game state behavior.
+## Travel Budgeting App - Kotlin / Plaid API
+Android class project built from October 2024 to December 2024.
+Travel budgeting app let users connect bank accounts, categorize spending, set trip budgets, and track expenses and receipts.
+Built with Kotlin, Jetpack Compose, Model-View-ViewModel (MVVM), LiveData, and Firebase; integrated the Plaid API for bank-account connectivity and financial data access.
+Personally owned backend functionality with strict Firebase authentication for user access and user information.
 `));
 
     expect(cards.map((card) => card.id)).toEqual(expect.arrayContaining([
@@ -163,6 +173,9 @@ Owned player physics, enemies, save system, and game state behavior.
       "aep_hackathon_second_place",
       "aep_react_native_flask_sqlite",
       "mario_physics_enemy_save_systems",
+      "travel_budgeting_kotlin_mvvm_compose",
+      "travel_budgeting_plaid_firebase_auth",
+      "travel_budgeting_backend_expense_tracking",
     ]));
   });
 });

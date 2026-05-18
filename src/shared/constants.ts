@@ -1,6 +1,6 @@
 export const ROLE_MODES = ["auto", "backend", "cloud", "full_stack", "ai", "consulting"] as const;
 export const JOB_IDS = ["captech", "publicis_sapient", "sallie_mae"] as const;
-export const PROJECT_IDS = ["aep_ai_safety", "mario_monogame", "coffee_dashboard"] as const;
+export const PROJECT_IDS = ["aep_ai_safety", "mario_monogame", "coffee_dashboard", "travel_budgeting_app"] as const;
 
 export const SECTION_BUDGETS = {
   workExperience: {
@@ -13,7 +13,7 @@ export const SECTION_BUDGETS = {
     maxProjects: 2,
     minTotalBullets: 3,
     maxTotalBullets: 4,
-    bulletsPerProject: { minBullets: 1, maxBullets: 3 }
+    bulletsPerProject: { minBullets: 1, maxBullets: 4 }
   },
   bullet: {
     maxWords: 32,
@@ -49,5 +49,10 @@ export const GROUNDED_SYNONYMS: Record<string, string[]> = {
   es6: ["es6+", "javascript", "modern javascript"],
   scrum: ["agile", "scaled agile"],
   "automated testing": ["test automation", "playwright", "cypress", "selenium", "karate", "jest", "pytest", "unit testing"],
-  "test automation": ["automated testing", "playwright", "cypress", "selenium", "karate", "jest", "pytest", "unit testing"]
+  "test automation": ["automated testing", "playwright", "cypress", "selenium", "karate", "jest", "pytest", "unit testing"],
+  "mobile app architecture": ["android", "kotlin", "jetpack compose", "mvvm", "model-view-viewmodel", "livedata", "react native"],
+  "mobile application architecture": ["android", "kotlin", "jetpack compose", "mvvm", "model-view-viewmodel", "livedata", "react native"],
+  mvvm: ["model-view-viewmodel", "android", "kotlin", "jetpack compose", "livedata"],
+  "financial api integration": ["plaid api", "plaid", "bank-account linking", "firebase"],
+  "expense tracking": ["travel budgeting", "receipt tracking", "personal finance app", "plaid api", "firebase"]
 };

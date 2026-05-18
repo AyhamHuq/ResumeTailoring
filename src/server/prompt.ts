@@ -27,17 +27,28 @@ function hasProjectEvidence(evidenceCards: EvidenceCard[], projectId: string): b
 function projectSelectionRules(jobDescription: string, evidenceCards: EvidenceCard[]) {
   const requiresMario = /\b(?:oop|object[-\s]?oriented|design patterns?|data structures?|algorithm(?:s| design)?)\b/i.test(jobDescription)
     && hasProjectEvidence(evidenceCards, "mario_monogame");
+  const requiresTravel = /\b(?:android|kotlin|jetpack compose|mvvm|model[-\s]?view[-\s]?viewmodel|livedata|firebase|plaid|mobile app|mobile application|personal finance|expense tracking|receipt tracking|travel budgeting|financial api)\b/i.test(jobDescription)
+    && hasProjectEvidence(evidenceCards, "travel_budgeting_app");
+  const requiredProjects = [
+    requiresTravel ? "travel_budgeting_app" : null,
+    requiresMario ? "mario_monogame" : null
+  ].filter((projectId): projectId is string => Boolean(projectId));
 
   return {
-    required_project: requiresMario ? "mario_monogame" : null,
+    required_project: requiredProjects[0] ?? null,
+    required_projects: requiredProjects,
     hard_rules: [
-      "If required_project is set, include that project in projects and cover its evidence in project bullets.",
+      "If required_projects has entries, include those project IDs in projects and cover their evidence in project bullets.",
       "If OOP, design patterns, data structures, or algorithms appear in the JD and mario_monogame evidence exists, select mario_monogame.",
-      "If React, responsive UI, cloud, metrics, or analytics dominate and no required_project is set, coffee_dashboard is a strong project choice.",
-      "If AI, ML, NLP, PyTorch, FAISS, or safety classification dominate and no required_project is set, aep_ai_safety is a strong project choice."
+      "If Android, Kotlin, MVVM, Jetpack Compose, LiveData, Firebase, Plaid, mobile app architecture, financial API integration, or personal finance app terms appear in the JD and travel_budgeting_app evidence exists, select travel_budgeting_app.",
+      "If React, responsive UI, cloud, metrics, or analytics dominate and no required_projects are set, coffee_dashboard is a strong project choice.",
+      "If AI, ML, NLP, PyTorch, FAISS, or safety classification dominate and no required_projects are set, aep_ai_safety is a strong project choice."
     ],
     mario_evidence_refs: evidenceCards
       .filter((card) => card.project_id === "mario_monogame")
+      .map((card) => card.id),
+    travel_evidence_refs: evidenceCards
+      .filter((card) => card.project_id === "travel_budgeting_app")
       .map((card) => card.id)
   };
 }
@@ -68,6 +79,15 @@ function bulletTargetInstruction(canonical: string): string {
   if (normalized === "user interfaces") {
     return "Must be covered in a bullet using React, TypeScript, React Native, responsive UI, accessibility, or interface delivery evidence.";
   }
+  if (normalized === "mobile app architecture" || normalized === "mvvm") {
+    return "Must be covered in a project bullet using mobile architecture evidence such as Android, Kotlin, Jetpack Compose, MVVM, Model-View-ViewModel, or LiveData; use travel_budgeting_app when available.";
+  }
+  if (normalized === "financial api integration") {
+    return "Must be covered in a project bullet using Plaid API, bank-account linking, Firebase, or financial-data access evidence; use travel_budgeting_app when available.";
+  }
+  if (normalized === "expense tracking") {
+    return "Must be covered in a project bullet using travel budgeting, trip budgets, categorized spending, expense tracking, or receipt tracking evidence.";
+  }
   if (normalized === "agile") {
     return "Must be covered in a delivery bullet using Agile-supported evidence; do not claim Scrum unless exact Scrum evidence exists.";
   }
@@ -93,6 +113,9 @@ function targetedInstructionForIssue(issue: ValidationIssue): string {
   }
   if (message.includes("object-oriented") || message.includes("design patterns") || message.includes("data structures")) {
     return "Add or rewrite a mario_monogame project bullet using state machine, command pattern, factory pattern, game state, or save-system evidence. Update coverage_plan to the project bullet.";
+  }
+  if (message.includes("android") || message.includes("kotlin") || message.includes("mvvm") || message.includes("travel_budgeting_app") || message.includes("financial api")) {
+    return "Add or rewrite a travel_budgeting_app project bullet using Android, Kotlin, Jetpack Compose, MVVM, LiveData, Firebase, or Plaid API evidence. Update coverage_plan to the project bullet.";
   }
   return "Modify the existing planned bullet slot when possible; otherwise add the required project/bullet and update coverage_plan to point at the new slot.";
 }
@@ -230,7 +253,8 @@ export function buildRepairPrompt(previousOutput: unknown, issues: ValidationIss
       "If keyword_prefer_bullet_not_covered, rewrite a relevant work/project bullet using the candidate evidence refs; do not add the term only to skills.",
       "If keyword_prefer_bullet_not_covered mentions containerized systems, the repaired bullet text must explicitly include Docker or containerized work and use the candidate evidence ref.",
       "If coverage_plan_missing_target or coverage_plan_unused_target, update coverage_plan and the named bullet so selected_evidence_refs are actually used by that bullet.",
-      "If required_project_missing, add project_id mario_monogame with bullets using mario_monogame evidence refs.",
+      "For Android, Kotlin, MVVM, mobile app architecture, financial API integration, Plaid, Firebase, or expense tracking, prefer travel_budgeting_app when its evidence refs are available.",
+      "If required_project_missing, add the project_id named in the validation issue with bullets using that project's evidence refs.",
       "Required density after repair: CapTech 5 bullets, Publicis Sapient 4 bullets, Sallie Mae 3 bullets, projects 3-4 total bullets, at least 15 bullets overall.",
       "If resume_over_hard_max, compress bullets first, then remove project bullets before work bullets."
     ],

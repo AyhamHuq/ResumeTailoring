@@ -157,6 +157,34 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
     allowInSkills: false
   },
   {
+    canonical: "mobile app architecture",
+    aliases: ["mobile application architecture", "mobile app development", "mobile application development", "mobile development", "Android application", "Android app", "personal finance app"],
+    claimableAliases: ["Android", "Kotlin", "Jetpack Compose", "MVVM", "Model-View-ViewModel", "LiveData", "React Native", "cross-platform app development"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "MVVM",
+    aliases: ["Model-View-ViewModel", "Model View ViewModel"],
+    claimableAliases: ["Jetpack Compose", "LiveData"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "financial API integration",
+    aliases: ["bank-account linking", "bank account linking", "financial data access", "bank-account connectivity"],
+    claimableAliases: ["Plaid API", "Plaid", "Firebase"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "expense tracking",
+    aliases: ["receipt tracking", "travel budgeting", "trip budgets", "categorized spending", "categorize spending"],
+    claimableAliases: ["Plaid API", "Firebase", "personal finance app"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
     canonical: "automated testing",
     aliases: ["test automation", "automated tests"],
     claimableAliases: ["Playwright", "Cypress", "Selenium", "Karate", "Jest", "pytest", "JUnit", "API testing"],
@@ -239,6 +267,50 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
     allowInSkills: true,
     skillLabel: "React",
     skillPriority: 90
+  },
+  {
+    canonical: "Kotlin",
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Kotlin",
+    skillPriority: 88
+  },
+  {
+    canonical: "Android",
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Android",
+    skillPriority: 86
+  },
+  {
+    canonical: "Jetpack Compose",
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Jetpack Compose",
+    skillPriority: 82
+  },
+  {
+    canonical: "Firebase",
+    aliases: ["Firebase Authentication", "Firebase Auth"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Firebase",
+    skillPriority: 74
+  },
+  {
+    canonical: "LiveData",
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "LiveData",
+    skillPriority: 70
+  },
+  {
+    canonical: "Plaid API",
+    aliases: ["Plaid"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Plaid API",
+    skillPriority: 70
   },
   {
     canonical: "AWS",
