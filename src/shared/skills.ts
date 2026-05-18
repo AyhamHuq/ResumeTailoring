@@ -34,7 +34,19 @@ const DISALLOWED_STANDALONE_SKILLS = new Set([
   "cloud monitoring",
   "monitoring",
   "alerts",
-  "metrics"
+  "metrics",
+  "mvvm",
+  "model-view-viewmodel",
+  "model view viewmodel",
+  "mobile app architecture",
+  "mobile application architecture",
+  "financial api integration",
+  "bank-account linking",
+  "bank account linking",
+  "expense tracking",
+  "receipt tracking",
+  "travel budgeting",
+  "personal finance app"
 ]);
 
 const SKILL_LABEL_ALIASES: Record<string, string> = {
@@ -52,6 +64,15 @@ const SKILL_LABEL_ALIASES: Record<string, string> = {
   "spring boot": "Spring Boot",
   javascript: "JavaScript",
   typescript: "TypeScript",
+  kotlin: "Kotlin",
+  android: "Android",
+  "jetpack compose": "Jetpack Compose",
+  livedata: "LiveData",
+  firebase: "Firebase",
+  "firebase authentication": "Firebase",
+  "firebase auth": "Firebase",
+  "plaid api": "Plaid API",
+  plaid: "Plaid API",
   playwright: "Playwright",
   docker: "Docker",
   jenkins: "Jenkins",
@@ -73,7 +94,10 @@ const SKILL_DISPLAY_PRIORITY: Record<string, number> = {
   javascript: 92,
   react: 90,
   java: 88,
+  kotlin: 88,
+  android: 87,
   "rest apis": 86,
+  "jetpack compose": 85,
   docker: 84,
   jenkins: 82,
   playwright: 80,
@@ -81,7 +105,10 @@ const SKILL_DISPLAY_PRIORITY: Record<string, number> = {
   "aws lambda": 76,
   "cloudwatch logs": 74,
   "github actions": 72,
+  firebase: 71,
+  "plaid api": 71,
   typescript: 70,
+  livedata: 69,
   python: 68,
   git: 66
 };

@@ -38,8 +38,11 @@ const context = {
     { id: "aep_hackathon_second_place", project_id: "aep_ai_safety", evidence_text: "AEP hackathon placed 2nd out of 17 teams with 800+ participants." },
     { id: "mario_collision_state_command_factory", project_id: "mario_monogame", evidence_text: "C# MonoGame collision behavior used state machine, command pattern, and factory pattern design.", skills: ["C#", "OOP", "object-oriented design", "design patterns", "state machine", "command pattern", "factory pattern"] },
     { id: "mario_physics_enemy_save_systems", project_id: "mario_monogame", evidence_text: "MonoGame player physics, enemy behavior, save system, and game state transitions.", skills: ["C#", "MonoGame", "player physics", "enemy systems", "save system", "game state"] },
+    { id: "travel_budgeting_kotlin_mvvm_compose", project_id: "travel_budgeting_app", evidence_text: "Android app built with Kotlin, Jetpack Compose, MVVM, and LiveData for travel budgeting.", skills: ["Kotlin", "Android", "Jetpack Compose", "MVVM", "LiveData", "mobile app architecture"] },
+    { id: "travel_budgeting_plaid_firebase_auth", project_id: "travel_budgeting_app", evidence_text: "Integrated Plaid API and Firebase Authentication for bank-account linking and financial data access.", skills: ["Plaid API", "Firebase", "Firebase Authentication", "financial API integration"] },
+    { id: "travel_budgeting_backend_expense_tracking", project_id: "travel_budgeting_app", evidence_text: "Owned backend functionality for expense tracking, receipt tracking, and trip budgets.", skills: ["expense tracking", "receipt tracking", "travel budgeting"] },
   ],
-  allowedProjectIds: ["aep_ai_safety", "mario_monogame", "coffee_dashboard"],
+  allowedProjectIds: ["aep_ai_safety", "mario_monogame", "coffee_dashboard", "travel_budgeting_app"],
   allowedJobIds: ["captech", "publicis_sapient", "sallie_mae"],
 };
 
@@ -213,6 +216,46 @@ describe("generated resume validation contract", () => {
   runValidationTest("accepts valid evidence refs and allowed project IDs", () => {
     expect(validateGeneratedResume, "Expose validateGeneratedResume(resume, context).").toBeTypeOf("function");
     expectValid(validateGeneratedResume?.(validResume(), context) as ValidationResult);
+  });
+
+  runValidationTest("accepts travel project with four bullets when caller allow list is stale", () => {
+    expect(validateGeneratedResume, "Expose validateGeneratedResume(resume, context).").toBeTypeOf("function");
+
+    const resume = validResume({
+      projects: [
+        {
+          project_id: "travel_budgeting_app",
+          display_name: "Travel Budgeting App - Kotlin / Plaid API",
+          bullets: [
+            {
+              text: "Built an Android travel-budgeting app with Kotlin, Jetpack Compose, MVVM, and LiveData for trip budget workflows.",
+              evidence_refs: ["travel_budgeting_kotlin_mvvm_compose"],
+              jd_keywords: ["Android", "Kotlin"],
+            },
+            {
+              text: "Integrated Plaid API and Firebase Authentication for bank-account linking and financial data access.",
+              evidence_refs: ["travel_budgeting_plaid_firebase_auth"],
+              jd_keywords: ["Plaid API", "Firebase"],
+            },
+            {
+              text: "Owned backend functionality connecting authenticated user data to categorized spending and trip expense features.",
+              evidence_refs: ["travel_budgeting_backend_expense_tracking"],
+              jd_keywords: ["backend"],
+            },
+            {
+              text: "Supported receipt tracking and travel budgeting flows for a personal-finance Android class project.",
+              evidence_refs: ["travel_budgeting_backend_expense_tracking"],
+              jd_keywords: ["expense tracking"],
+            },
+          ],
+        },
+      ],
+    });
+
+    expectValid(validateGeneratedResume?.(resume, {
+      ...context,
+      allowedProjectIds: ["aep_ai_safety", "mario_monogame", "coffee_dashboard"],
+    }) as ValidationResult);
   });
 
   runValidationTest("rejects invalid evidence refs", () => {
@@ -410,6 +453,21 @@ describe("generated resume validation contract", () => {
     expect(result.issues?.map((issue) => issue.code)).toEqual(expect.arrayContaining([
       "required_project_missing",
     ]));
+  });
+
+  runValidationTest("rejects missing travel_budgeting_app project when Android Kotlin evidence is required", () => {
+    expect(validateGeneratedResume, "Expose validateGeneratedResume(resume, context).").toBeTypeOf("function");
+
+    const result = validateGeneratedResume?.(validResume({ coverage_plan: [] }), {
+      ...context,
+      jobDescription: "Need Android application development with Kotlin, Jetpack Compose, MVVM, Plaid API, Firebase, and expense tracking.",
+    }) as { success?: boolean; valid?: boolean; issues?: Array<{ code?: string; message?: string }> };
+
+    expect(result.success ?? result.valid).toBe(false);
+    expect(result.issues?.map((issue) => issue.code)).toEqual(expect.arrayContaining([
+      "required_project_missing",
+    ]));
+    expect(JSON.stringify(result.issues)).toMatch(/travel_budgeting_app/);
   });
 
   runValidationTest("accepts repaired bullet-first output with coverage plan and mario_monogame selected", () => {

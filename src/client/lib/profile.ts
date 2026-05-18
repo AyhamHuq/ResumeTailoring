@@ -63,6 +63,10 @@ export const STATIC_PROFILE: StaticProfile = {
     {
       project_id: "coffee_dashboard",
       display_name: "Coffee Shop Analytics Dashboard"
+    },
+    {
+      project_id: "travel_budgeting_app",
+      display_name: "Travel Budgeting App - Kotlin / Plaid API"
     }
   ]
 };

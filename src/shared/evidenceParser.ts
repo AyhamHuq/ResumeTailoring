@@ -4,7 +4,9 @@ const REQUIRED_SECTIONS = ["CapTech Ventures", "Publicis Sapient", "Sallie Mae",
 const SKILL_SECTION = "Consolidated Skills and Keywords";
 const SKILL_TERMS = [
   "AWS", "Lambda", "API Gateway", "SQS", "SNS", "DynamoDB", "Kinesis", "Spring", "Spring Boot",
-  "Java", "Golang", "Python", "TypeScript", "JavaScript", "ES6+", "ES6", "React", "React Native",
+  "Java", "Kotlin", "Golang", "Python", "TypeScript", "JavaScript", "ES6+", "ES6", "React", "React Native",
+  "Android", "Jetpack Compose", "MVVM", "Model-View-ViewModel", "LiveData", "Firebase",
+  "Firebase Authentication", "Plaid API",
   "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "NLP", "C#", "Flask", "RESTful APIs",
   "RESTful API", "REST APIs", "REST API", "RESTful", "Azure SQL", "SQLite", "CloudFormation",
   "CDK", "Ansible", "Jenkins", "GitHub Actions", "TeamCity", "Azure DevOps", "Vercel", "Docker", "Git",
@@ -299,6 +301,36 @@ const KNOWN_FACTS: KnownFact[] = [
     required: [/mario|monogame/i, /player physics|physics/i, /enemy|save system|game state/i],
     skills: ["C#", "MonoGame", "player physics", "enemy systems", "save system", "game state"],
     role_tags: ["backend", "full_stack"]
+  },
+  {
+    id: "travel_budgeting_kotlin_mvvm_compose",
+    type: "project_fact",
+    title: "Android travel budgeting app with Kotlin, Jetpack Compose, MVVM, and LiveData",
+    section: "Additional Projects",
+    project_id: "travel_budgeting_app",
+    required: [/travel budgeting|trip budgets|expenses|receipts/i, /kotlin/i, /jetpack compose/i, /mvvm|model[- ]view[- ]viewmodel/i, /livedata/i],
+    skills: ["Kotlin", "Android", "Jetpack Compose", "MVVM", "Model-View-ViewModel", "LiveData", "mobile app architecture", "travel budgeting", "expense tracking", "receipt tracking"],
+    role_tags: ["full_stack", "backend"]
+  },
+  {
+    id: "travel_budgeting_plaid_firebase_auth",
+    type: "project_fact",
+    title: "Plaid API and Firebase Authentication for bank-linked budgeting",
+    section: "Additional Projects",
+    project_id: "travel_budgeting_app",
+    required: [/plaid/i, /firebase/i, /authentication|user access|user information/i, /bank[- ]account|financial data/i],
+    skills: ["Plaid API", "Firebase", "Firebase Authentication", "financial API integration", "bank-account linking", "authentication"],
+    role_tags: ["backend", "full_stack"]
+  },
+  {
+    id: "travel_budgeting_backend_expense_tracking",
+    type: "project_fact",
+    title: "Backend-owned expense, receipt, and trip budget tracking",
+    section: "Additional Projects",
+    project_id: "travel_budgeting_app",
+    required: [/personally owned backend|owned backend/i, /categorize spending|track expenses|receipts|trip budgets/i],
+    skills: ["backend functionality", "expense tracking", "receipt tracking", "travel budgeting", "personal finance app", "Firebase"],
+    role_tags: ["backend", "full_stack"]
   }
 ];
 
@@ -418,8 +450,8 @@ function inferRoleTags(text: string): Exclude<RoleMode, "auto">[] {
   const lower = text.toLowerCase();
   const tags = new Set<Exclude<RoleMode, "auto">>();
   if (/aws|cloud|lambda|sqs|dynamodb|cloudformation|cdk|cloudwatch/.test(lower)) tags.add("cloud");
-  if (/api|spring|java|python|backend|database|queue/.test(lower)) tags.add("backend");
-  if (/react|frontend|full.?stack|typescript/.test(lower)) tags.add("full_stack");
+  if (/api|spring|java|kotlin|firebase|plaid|python|backend|database|queue/.test(lower)) tags.add("backend");
+  if (/react|android|jetpack|mobile|frontend|full.?stack|typescript/.test(lower)) tags.add("full_stack");
   if (/ai|llm|rag|pytorch|faiss|nlp|bedrock/.test(lower)) tags.add("ai");
   if (/client|stakeholder|consult|delivery|presentation/.test(lower)) tags.add("consulting");
   return [...tags];

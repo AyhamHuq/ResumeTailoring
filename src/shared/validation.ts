@@ -440,27 +440,42 @@ function requiresMarioProject(context: ValidationContext): boolean {
   return context.evidenceCards.some((card) => card.project_id === "mario_monogame");
 }
 
+function requiresTravelProject(context: ValidationContext): boolean {
+  if (!context.jobDescription) {
+    return false;
+  }
+  if (!/\b(?:android|kotlin|jetpack compose|mvvm|model[-\s]?view[-\s]?viewmodel|livedata|firebase|plaid|mobile app|mobile application|personal finance|expense tracking|receipt tracking|travel budgeting|financial api)\b/i.test(context.jobDescription)) {
+    return false;
+  }
+  return context.evidenceCards.some((card) => card.project_id === "travel_budgeting_app");
+}
+
 function validateRequiredProjectSelection(
   resume: GeneratedResume,
   context: ValidationContext,
   issues: ValidationIssue[]
 ): void {
-  if (!requiresMarioProject(context)) {
-    return;
+  if (requiresMarioProject(context) && !resume.projects.some((project) => project.project_id === "mario_monogame")) {
+    const refs = context.evidenceCards
+      .filter((card) => card.project_id === "mario_monogame")
+      .map((card) => card.id);
+    issues.push(issue(
+      "required_project_missing",
+      "projects",
+      `JD asks for OOP/design patterns/data structures/algorithms and mario_monogame evidence exists, so select project_id 'mario_monogame'. Candidate evidence refs: ${refs.join(", ")}.`
+    ));
   }
 
-  if (resume.projects.some((project) => project.project_id === "mario_monogame")) {
-    return;
+  if (requiresTravelProject(context) && !resume.projects.some((project) => project.project_id === "travel_budgeting_app")) {
+    const refs = context.evidenceCards
+      .filter((card) => card.project_id === "travel_budgeting_app")
+      .map((card) => card.id);
+    issues.push(issue(
+      "required_project_missing",
+      "projects",
+      `JD asks for Android/Kotlin/MVVM/mobile app or financial API work and travel_budgeting_app evidence exists, so select project_id 'travel_budgeting_app'. Candidate evidence refs: ${refs.join(", ")}.`
+    ));
   }
-
-  const refs = context.evidenceCards
-    .filter((card) => card.project_id === "mario_monogame")
-    .map((card) => card.id);
-  issues.push(issue(
-    "required_project_missing",
-    "projects",
-    `JD asks for OOP/design patterns/data structures/algorithms and mario_monogame evidence exists, so select project_id 'mario_monogame'. Candidate evidence refs: ${refs.join(", ")}.`
-  ));
 }
 
 export function validateGeneratedResume(
@@ -483,9 +498,11 @@ export function validateGeneratedResume(
   const resume = parsed.data;
   const evidenceIds = new Set(context.evidenceCards.map((card) => card.id));
   const allowedJobs = new Set<JobId>(context.allowedJobIds ?? context.profile?.employers.map((employer) => employer.job_id) ?? JOB_IDS);
-  const allowedProjects = new Set<ProjectId>(
-    context.allowedProjectIds ?? context.profile?.allowed_projects.map((project) => project.project_id) ?? PROJECT_IDS
-  );
+  const allowedProjects = new Set<ProjectId>([
+    ...(context.allowedProjectIds ?? []),
+    ...(context.profile?.allowed_projects.map((project) => project.project_id) ?? []),
+    ...PROJECT_IDS
+  ]);
   const jobsById = new Map(resume.work_experience.map((job) => [job.job_id, job]));
 
   for (const jobId of allowedJobs) {

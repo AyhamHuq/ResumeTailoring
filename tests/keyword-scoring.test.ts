@@ -279,6 +279,64 @@ Automated testing frameworks such as Karate, Playwright, Cypress, Selenium.
     expect(detail("user interfaces")?.status).toBe("covered_in_bullets");
   });
 
+  runKeywordTest("recognizes Android Kotlin MVVM travel app evidence", () => {
+    expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
+      .toBeTypeOf("function");
+
+    const report = classifyKeywords?.({
+      jobDescription: "Need Android application work with Kotlin, MVVM, financial API integration, Plaid API, Firebase Authentication, and expense tracking.",
+      generatedResume: {
+        skills: ["Kotlin", "Android", "Jetpack Compose", "Firebase", "Plaid API"],
+        projects: [
+          {
+            bullets: [
+              {
+                text: "Built an Android travel-budgeting app with Kotlin, Jetpack Compose, MVVM, LiveData, Plaid API, Firebase Authentication, and expense tracking.",
+              },
+            ],
+          },
+        ],
+      },
+      evidenceCards: [
+        {
+          id: "travel_budgeting_kotlin_mvvm_compose",
+          type: "project_fact",
+          project_id: "travel_budgeting_app",
+          evidence_text: "Android app built with Kotlin, Jetpack Compose, MVVM, and LiveData for travel budgeting.",
+          skills: ["Kotlin", "Android", "Jetpack Compose", "MVVM", "LiveData", "mobile app architecture"],
+        },
+        {
+          id: "travel_budgeting_plaid_firebase_auth",
+          type: "project_fact",
+          project_id: "travel_budgeting_app",
+          evidence_text: "Integrated Plaid API and Firebase Authentication for bank-account linking and financial data access.",
+          skills: ["Plaid API", "Firebase", "Firebase Authentication", "financial API integration"],
+        },
+        {
+          id: "travel_budgeting_backend_expense_tracking",
+          type: "project_fact",
+          project_id: "travel_budgeting_app",
+          evidence_text: "Owned backend functionality for expense tracking, receipt tracking, and trip budgets.",
+          skills: ["expense tracking", "receipt tracking", "travel budgeting"],
+        },
+      ],
+    }) as KeywordReport;
+
+    const detail = (canonical: string) => report.details?.find((item) => item.canonical === canonical);
+
+    expect(detail("mobile app architecture")?.status).toBe("covered_in_bullets");
+    expect(detail("MVVM")?.status).toBe("covered_in_bullets");
+    expect(detail("financial API integration")?.status).toBe("covered_in_bullets");
+    expect(detail("expense tracking")?.status).toBe("covered_in_bullets");
+    expect(report.unsupported).not.toEqual(expect.arrayContaining([
+      "Android",
+      "Kotlin",
+      "MVVM",
+      "Plaid API",
+      "Firebase Authentication",
+    ]));
+  });
+
   runKeywordTest("does not satisfy exact tools from alternatives without an active example group", () => {
     expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
       .toBeTypeOf("function");
