@@ -1,11 +1,15 @@
 import { JOB_IDS, PROJECT_IDS, SECTION_BUDGETS } from "./constants";
 import { calculateResumeFitReport, countWords, estimateLines } from "./budgets";
-import { evidenceSupportsClaim } from "./keywords";
+import { evidenceSupportsClaim, expandGroundedSynonyms, scoreKeywords, termsProhibitedAsClaims } from "./keywords";
 import { isDisallowedStandaloneSkill } from "./skills";
 import {
   GeneratedResumeSchema,
+  type CoveragePlanEntry,
   type EvidenceCard,
   type GeneratedResume,
+  type GeneratedBullet,
+  type KeywordReportItem,
+  type KeywordReport,
   type ResumeFitReport,
   type ResumeProfile,
   type ValidationIssue
@@ -49,6 +53,8 @@ type ValidationContext = {
   allowedJobIds?: JobId[];
   budgets?: BudgetContext;
   unsupportedTerms?: string[];
+  jobDescription?: string;
+  keywordReport?: KeywordReport;
 };
 
 export type GeneratedResumeValidationResult = {
@@ -66,6 +72,14 @@ function issue(code: string, path: string, message: string): ValidationIssue {
 function includesTerm(text: string, term: string): boolean {
   const escaped = term.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`(^|[^a-z0-9+#])${escaped}([^a-z0-9+#]|$)`, "i").test(text);
+}
+
+function normalizeTerm(value: string): string {
+  return value.toLowerCase().replace(/[^\w#+/. -]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function includesAnyTerm(text: string, terms: string[]): boolean {
+  return terms.some((term) => includesTerm(text, term));
 }
 
 function normalizeContext(
@@ -145,9 +159,9 @@ function validateBullet(
   }
 
   const budget = getBulletBudget(context);
-  const words = Math.max(countWords(bullet.text), bullet.word_count ?? 0);
-  const chars = Math.max(bullet.text.length, bullet.char_count ?? 0);
-  const lines = Math.max(estimateLines(bullet.text), bullet.estimated_lines ?? 0);
+  const words = countWords(bullet.text);
+  const chars = bullet.text.length;
+  const lines = estimateLines(bullet.text);
   if (words > budget.maxWords) {
     issues.push(issue("bullet_over_word_budget", path, `Bullet has ${words} words; max is ${budget.maxWords}.`));
   }
@@ -173,6 +187,280 @@ function collectUnsupportedTerms(candidate: unknown, context: ValidationContext)
   const fromResume = Array.isArray(record.unsupported_terms) ? record.unsupported_terms : [];
   const fromReport = Array.isArray(record.keyword_report?.unsupported) ? record.keyword_report?.unsupported : [];
   return [...new Set([...fromContext, ...fromResume, ...fromReport].filter((term): term is string => typeof term === "string"))];
+}
+
+function keywordReportForPlacement(
+  resume: GeneratedResume,
+  context: ValidationContext
+): KeywordReport | undefined {
+  if (context.keywordReport) {
+    return context.keywordReport;
+  }
+  if (!context.jobDescription) {
+    return undefined;
+  }
+
+  return scoreKeywords(context.jobDescription, resume, context.evidenceCards);
+}
+
+function validateBulletFirstKeywordPlacement(
+  resume: GeneratedResume,
+  context: ValidationContext,
+  issues: ValidationIssue[]
+): void {
+  const report = keywordReportForPlacement(resume, context);
+  if (!report?.details?.length) {
+    return;
+  }
+
+  const seen = new Set<string>();
+  for (const item of report.details) {
+    if (
+      item.placement_recommendation !== "prefer_bullet"
+      || item.status === "covered_in_bullets"
+      || !["contextual_evidence", "resume_skill"].includes(item.support_level)
+    ) {
+      continue;
+    }
+
+    const key = item.canonical.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+
+    const refs = item.evidence_refs.length > 0 ? ` Candidate evidence refs: ${item.evidence_refs.join(", ")}.` : "";
+    const suggestion = bulletFirstSuggestion(item, resume, context);
+    issues.push(issue(
+      "keyword_prefer_bullet_not_covered",
+      "keyword_report.details",
+      `Canonical '${item.canonical}' from JD term '${item.term}' is bullet-worthy but is not covered in a work/project bullet. Candidate section: ${suggestion.section}. Suggested bullet slot: ${suggestion.slot}. Rewrite an existing grounded bullet instead of relying on Skills.${refs}`
+    ));
+  }
+}
+
+type PlannedBullet = {
+  bullet?: GeneratedBullet;
+  path: string;
+  section: "work_experience" | "projects";
+};
+
+function targetTerms(item: KeywordReportItem): string[] {
+  return Array.from(new Set([
+    item.term,
+    item.canonical,
+    ...item.matched_terms,
+    ...expandGroundedSynonyms(item.canonical)
+  ].filter(Boolean)));
+}
+
+function requiredBulletTargets(report: KeywordReport): KeywordReportItem[] {
+  const targets = report.details.filter((item) => (
+    item.placement_recommendation === "prefer_bullet"
+    && item.support_level !== "unsupported"
+    && item.support_level !== "alternative_satisfied"
+  ));
+  const seen = new Set<string>();
+  return targets.filter((item) => {
+    const key = normalizeTerm(item.canonical);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function planTargetsItem(entry: CoveragePlanEntry, item: KeywordReportItem): boolean {
+  const entryTerms = [entry.target_term, entry.canonical ?? ""].map(normalizeTerm).filter(Boolean);
+  const itemTerms = [item.term, item.canonical].map(normalizeTerm);
+  return entryTerms.some((entryTerm) => itemTerms.includes(entryTerm));
+}
+
+function evidenceRefsForTargetInBullets(resume: GeneratedResume, item: KeywordReportItem): string[] {
+  const terms = targetTerms(item);
+  const refs: string[] = [];
+  for (const bullet of [
+    ...resume.work_experience.flatMap((job) => job.bullets),
+    ...resume.projects.flatMap((project) => project.bullets)
+  ]) {
+    if (includesAnyTerm(bullet.text, terms)) {
+      refs.push(...bullet.evidence_refs);
+    }
+  }
+  return Array.from(new Set(refs));
+}
+
+function cardsForRefs(context: ValidationContext, refs: string[]): EvidenceCard[] {
+  const byId = new Map(context.evidenceCards.map((card) => [card.id, card]));
+  return refs.map((ref) => byId.get(ref)).filter((card): card is EvidenceCard => Boolean(card));
+}
+
+function bulletFirstSuggestion(
+  item: KeywordReportItem,
+  resume: GeneratedResume,
+  context: ValidationContext
+): { section: string; slot: string } {
+  const refs = item.evidence_refs.length > 0 ? item.evidence_refs : evidenceRefsForTargetInBullets(resume, item);
+  const cards = cardsForRefs(context, refs);
+  const firstCard = cards[0];
+  if (!firstCard) {
+    return { section: "work_experience or projects", slot: "nearest existing grounded bullet" };
+  }
+
+  if (firstCard.parent_job_id) {
+    const jobIndex = resume.work_experience.findIndex((job) => job.job_id === firstCard.parent_job_id);
+    const job = jobIndex >= 0 ? resume.work_experience[jobIndex] : undefined;
+    const bulletIndex = job?.bullets.findIndex((bullet) => bullet.evidence_refs.some((ref) => refs.includes(ref))) ?? -1;
+    return {
+      section: `work_experience job_id=${firstCard.parent_job_id}`,
+      slot: `work_experience.${Math.max(jobIndex, 0)}.bullets.${bulletIndex >= 0 ? bulletIndex : 0}`
+    };
+  }
+
+  if (firstCard.project_id) {
+    const projectIndex = resume.projects.findIndex((project) => project.project_id === firstCard.project_id);
+    const project = projectIndex >= 0 ? resume.projects[projectIndex] : undefined;
+    const bulletIndex = project?.bullets.findIndex((bullet) => bullet.evidence_refs.some((ref) => refs.includes(ref))) ?? -1;
+    return {
+      section: `projects project_id=${firstCard.project_id}`,
+      slot: `projects.${projectIndex >= 0 ? projectIndex : 0}.bullets.${bulletIndex >= 0 ? bulletIndex : 0}`
+    };
+  }
+
+  return { section: "work_experience or projects", slot: "nearest existing grounded bullet" };
+}
+
+function findPlannedBullet(resume: GeneratedResume, entry: CoveragePlanEntry): PlannedBullet {
+  if (entry.section === "work_experience") {
+    if (!entry.job_id) {
+      return { path: "coverage_plan.job_id", section: "work_experience" };
+    }
+    const jobIndex = resume.work_experience.findIndex((job) => job.job_id === entry.job_id);
+    const bullet = jobIndex >= 0 ? resume.work_experience[jobIndex]?.bullets[entry.bullet_index] : undefined;
+    return {
+      bullet,
+      path: jobIndex >= 0 ? `work_experience.${jobIndex}.bullets.${entry.bullet_index}` : `work_experience.${entry.job_id}.bullets.${entry.bullet_index}`,
+      section: "work_experience"
+    };
+  }
+
+  if (!entry.project_id) {
+    return { path: "coverage_plan.project_id", section: "projects" };
+  }
+  const projectIndex = resume.projects.findIndex((project) => project.project_id === entry.project_id);
+  const bullet = projectIndex >= 0 ? resume.projects[projectIndex]?.bullets[entry.bullet_index] : undefined;
+  return {
+    bullet,
+    path: projectIndex >= 0 ? `projects.${projectIndex}.bullets.${entry.bullet_index}` : `projects.${entry.project_id}.bullets.${entry.bullet_index}`,
+    section: "projects"
+  };
+}
+
+function validateCoveragePlan(
+  resume: GeneratedResume,
+  context: ValidationContext,
+  issues: ValidationIssue[]
+): void {
+  const report = keywordReportForPlacement(resume, context);
+  if (!context.jobDescription || !report?.details?.length) {
+    return;
+  }
+
+  const evidenceIds = new Set(context.evidenceCards.map((card) => card.id));
+  const requiredTargets = requiredBulletTargets(report);
+  if (requiredTargets.length === 0) {
+    return;
+  }
+
+  for (const [entryIndex, entry] of resume.coverage_plan.entries()) {
+    const planned = findPlannedBullet(resume, entry);
+    if (entry.section === "work_experience" && !entry.job_id) {
+      issues.push(issue("coverage_plan_missing_section_id", `coverage_plan.${entryIndex}.job_id`, `Coverage plan target '${entry.target_term}' must include job_id for work_experience.`));
+    }
+    if (entry.section === "projects" && !entry.project_id) {
+      issues.push(issue("coverage_plan_missing_section_id", `coverage_plan.${entryIndex}.project_id`, `Coverage plan target '${entry.target_term}' must include project_id for projects.`));
+    }
+    for (const ref of entry.selected_evidence_refs) {
+      if (!evidenceIds.has(ref)) {
+        issues.push(issue("coverage_plan_invalid_evidence_ref", `coverage_plan.${entryIndex}.selected_evidence_refs`, `Coverage plan target '${entry.target_term}' references missing evidence ref '${ref}'.`));
+      }
+    }
+    if (!planned.bullet) {
+      issues.push(issue("coverage_plan_invalid_bullet", `coverage_plan.${entryIndex}`, `Coverage plan target '${entry.target_term}' points to missing bullet '${planned.path}'.`));
+      continue;
+    }
+    const usesSelectedEvidence = entry.selected_evidence_refs.some((ref) => planned.bullet?.evidence_refs.includes(ref));
+    if (!usesSelectedEvidence) {
+      issues.push(issue("coverage_plan_unused_evidence", `coverage_plan.${entryIndex}.selected_evidence_refs`, `Coverage plan target '${entry.target_term}' selected evidence is not used by planned bullet '${planned.path}'.`));
+    }
+  }
+
+  for (const target of requiredTargets) {
+    const matchingEntries = resume.coverage_plan.filter((entry) => planTargetsItem(entry, target));
+    const suggestion = bulletFirstSuggestion(target, resume, context);
+    const candidateRefs = target.evidence_refs.length > 0
+      ? target.evidence_refs
+      : evidenceRefsForTargetInBullets(resume, target);
+    if (matchingEntries.length === 0) {
+      issues.push(issue(
+        "coverage_plan_missing_target",
+        "coverage_plan",
+        `Coverage plan is missing canonical '${target.canonical}' for JD term '${target.term}'. Candidate evidence refs: ${candidateRefs.join(", ") || "none"}. Candidate section: ${suggestion.section}. Suggested bullet slot: ${suggestion.slot}.`
+      ));
+      continue;
+    }
+
+    const targetCoveredByPlan = matchingEntries.some((entry) => {
+      const planned = findPlannedBullet(resume, entry);
+      return Boolean(
+        planned.bullet
+        && includesAnyTerm(planned.bullet.text, targetTerms(target))
+        && entry.selected_evidence_refs.some((ref) => planned.bullet?.evidence_refs.includes(ref))
+      );
+    });
+
+    if (!targetCoveredByPlan) {
+      issues.push(issue(
+        "coverage_plan_unused_target",
+        "coverage_plan",
+        `Coverage plan target '${target.canonical}' is not actually covered by its planned bullet. Candidate evidence refs: ${candidateRefs.join(", ") || "none"}. Candidate section: ${suggestion.section}. Suggested bullet slot: ${suggestion.slot}.`
+      ));
+    }
+  }
+}
+
+function requiresMarioProject(context: ValidationContext): boolean {
+  if (!context.jobDescription) {
+    return false;
+  }
+  if (!/\b(?:oop|object[-\s]?oriented|design patterns?|data structures?|algorithm(?:s| design)?)\b/i.test(context.jobDescription)) {
+    return false;
+  }
+  return context.evidenceCards.some((card) => card.project_id === "mario_monogame");
+}
+
+function validateRequiredProjectSelection(
+  resume: GeneratedResume,
+  context: ValidationContext,
+  issues: ValidationIssue[]
+): void {
+  if (!requiresMarioProject(context)) {
+    return;
+  }
+
+  if (resume.projects.some((project) => project.project_id === "mario_monogame")) {
+    return;
+  }
+
+  const refs = context.evidenceCards
+    .filter((card) => card.project_id === "mario_monogame")
+    .map((card) => card.id);
+  issues.push(issue(
+    "required_project_missing",
+    "projects",
+    `JD asks for OOP/design patterns/data structures/algorithms and mario_monogame evidence exists, so select project_id 'mario_monogame'. Candidate evidence refs: ${refs.join(", ")}.`
+  ));
 }
 
 export function validateGeneratedResume(
@@ -254,6 +542,7 @@ export function validateGeneratedResume(
       }
     });
   });
+  validateRequiredProjectSelection(resume, context, issues);
 
   const skillText = resume.skills.join(", ");
   const skillsBudget = {
@@ -271,7 +560,7 @@ export function validateGeneratedResume(
     issues.push(issue("skills_over_item_budget", "skills", `Skills section has ${resume.skills.length} items; max is ${skillsBudget.maxItems}.`));
   }
   resume.skills.forEach((skill, skillIndex) => {
-    if (isDisallowedStandaloneSkill(skill)) {
+    if (isDisallowedStandaloneSkill(skill, { jobDescription: context.jobDescription })) {
       issues.push(issue("disallowed_generic_skill", `skills.${skillIndex}`, `Skill '${skill}' should be covered through specific tools or bullets instead of listed as a standalone skill.`));
     }
   });
@@ -282,11 +571,20 @@ export function validateGeneratedResume(
     ...resume.projects.flatMap((project) => project.bullets.map((bullet) => bullet.text))
   ].join(" ").toLowerCase();
 
-  for (const term of collectUnsupportedTerms(candidate, context)) {
-    if (term.length >= 3 && includesTerm(claimText, term) && !evidenceSupportsClaim(term, context.evidenceCards)) {
-      issues.push(issue("unsupported_claim", "resume", `Unsupported JD term '${term}' appears as a resume claim.`));
+  const prohibitedTerms = Array.from(new Set([
+    ...collectUnsupportedTerms(candidate, context),
+    ...termsProhibitedAsClaims(keywordReportForPlacement(resume, context))
+  ]));
+
+  for (const term of prohibitedTerms) {
+    if (term.length >= 3 && includesTerm(claimText, term)) {
+      const supportText = evidenceSupportsClaim(term, context.evidenceCards) ? " or needs more specific source detail" : "";
+      issues.push(issue("unsupported_claim", "resume", `Unsupported JD term '${term}' appears as a resume claim${supportText}.`));
     }
   }
+
+  validateBulletFirstKeywordPlacement(resume, context, issues);
+  validateCoveragePlan(resume, context, issues);
 
   const fitReport = calculateResumeFitReport(resume, context.profile, { page: getPageBudget(context) });
   const pageBudget = getPageBudget(context);

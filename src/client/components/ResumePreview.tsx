@@ -9,6 +9,7 @@ interface ResumePreviewProps {
   profile: StaticProfile;
   resume: GeneratedResume | null;
   evidenceCards: EvidenceCard[];
+  jobDescription?: string;
   onSelectBullet: (bullet: GeneratedBullet) => void;
 }
 

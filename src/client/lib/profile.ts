@@ -15,7 +15,12 @@ export const STATIC_PROFILE: StaticProfile = {
       location: "Columbus, OH",
       degree: "Bachelor of Science in Computer Science and Engineering",
       graduation: "May 2025",
-      gpa: "3.95"
+      gpa: "3.95",
+      coursework: [
+        "Data Structures and Algorithms",
+        "Software Engineering",
+        "Object-Oriented Programming"
+      ]
     }
   ],
   certifications: [
@@ -73,11 +78,15 @@ export function formatContact(profile: StaticProfile): string {
 }
 
 export function formatEducation(education: StaticProfile["education"][number]): string {
-  return [
+  const base = [
     education.degree,
     education.school,
     education.location,
     education.graduation,
     education.gpa ? `GPA ${education.gpa}` : ""
   ].filter(Boolean).join(" | ");
+  const coursework = education.coursework?.length
+    ? `Coursework: ${education.coursework.join(", ")}`
+    : "";
+  return [base, coursework].filter(Boolean).join(" | ");
 }

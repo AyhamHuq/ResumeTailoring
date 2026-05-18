@@ -24,7 +24,8 @@ export const ResumeProfileSchema = z.object({
     location: z.string().optional(),
     degree: z.string().min(1),
     graduation: z.string().min(1),
-    gpa: z.string().optional()
+    gpa: z.string().optional(),
+    coursework: z.array(z.string().min(1)).optional()
   })).min(1),
   certifications: z.array(z.string().min(1)),
   role_modes: z.array(RoleModeSchema).min(1),
@@ -65,6 +66,17 @@ export const GeneratedBulletSchema = z.object({
   estimated_lines: z.number().int().nonnegative().optional()
 });
 export type GeneratedBullet = z.infer<typeof GeneratedBulletSchema>;
+
+export const CoveragePlanEntrySchema = z.object({
+  target_term: z.string().min(1),
+  canonical: z.string().min(1).optional(),
+  selected_evidence_refs: z.array(z.string().min(1)).min(1),
+  section: z.enum(["work_experience", "projects"]),
+  bullet_index: z.number().int().nonnegative(),
+  job_id: JobIdSchema.optional(),
+  project_id: ProjectIdSchema.optional()
+});
+export type CoveragePlanEntry = z.infer<typeof CoveragePlanEntrySchema>;
 
 export const KeywordSupportLevelSchema = z.enum([
   "bullet",
@@ -151,6 +163,7 @@ const GeneratedProjectSchema = z.object({
 export const GeneratedResumeSchema = z.object({
   role_mode: RoleModeSchema,
   summary: z.string().optional(),
+  coverage_plan: z.array(CoveragePlanEntrySchema).default([]),
   skills: z.array(GeneratedSkillSchema).min(1),
   work_experience: z.array(z.object({
     job_id: JobIdSchema,

@@ -27,17 +27,40 @@ function errorIssue(code: string, message: string, path = "$"): ValidationIssue 
   return { code, path, message, severity: "error" };
 }
 
-function prepareGeneratedCandidate(rawOutput: unknown) {
+function prepareGeneratedCandidate(rawOutput: unknown, jobDescription?: string) {
   const schemaCheck = GeneratedResumeSchema.safeParse(rawOutput);
   if (!schemaCheck.success) {
     return { rawOutput, schemaCheck };
   }
 
-  const curated = curateGeneratedResumeSkills(schemaCheck.data);
+  const curated = curateGeneratedResumeSkills(schemaCheck.data, { jobDescription });
   return {
     rawOutput: curated,
     schemaCheck: GeneratedResumeSchema.safeParse(curated)
   };
+}
+
+function validateCandidate(
+  rawOutput: unknown,
+  request: { job_description: string; evidence_cards: typeof GenerateResumeRequestSchema._type.evidence_cards; allowed_project_ids?: typeof GenerateResumeRequestSchema._type.allowed_project_ids },
+  profile: Awaited<ReturnType<typeof loadResumeProfile>>
+) {
+  const prepared = prepareGeneratedCandidate(rawOutput, request.job_description);
+  const candidate = prepared.rawOutput;
+  const schemaCheck = prepared.schemaCheck;
+  const keywordReport = schemaCheck.success
+    ? scoreKeywords(request.job_description, schemaCheck.data, request.evidence_cards)
+    : undefined;
+  const validation = validateGeneratedResume(candidate, {
+    evidenceCards: request.evidence_cards,
+    profile,
+    unsupportedTerms: termsProhibitedAsClaims(keywordReport),
+    allowedProjectIds: request.allowed_project_ids,
+    jobDescription: request.job_description,
+    keywordReport
+  });
+
+  return { rawOutput: candidate, schemaCheck, keywordReport, validation };
 }
 
 app.get("/api/profile", async (_req, res) => {
@@ -92,7 +115,7 @@ app.post("/api/generate-resume", async (req, res) => {
     let rawOutput: unknown;
 
     if (mode === "mock") {
-      rawOutput = generateMockResume(request.evidence_cards, effectiveProfile, request.role_mode);
+      rawOutput = generateMockResume(request.evidence_cards, effectiveProfile, request.role_mode, request.job_description);
     } else {
       rawOutput = await callOpenAiCompatibleJson([
         { role: "system", content: buildSystemPrompt() },
@@ -100,13 +123,10 @@ app.post("/api/generate-resume", async (req, res) => {
       ], llmConfig);
     }
 
-    let prepared = prepareGeneratedCandidate(rawOutput);
-    rawOutput = prepared.rawOutput;
-    let schemaCheck = prepared.schemaCheck;
-    let keywordReport = schemaCheck.success
-      ? scoreKeywords(request.job_description, schemaCheck.data, request.evidence_cards)
-      : undefined;
-    let validation = validateGeneratedResume(rawOutput, request.evidence_cards, effectiveProfile, termsProhibitedAsClaims(keywordReport), request.allowed_project_ids);
+    let checked = validateCandidate(rawOutput, request, effectiveProfile);
+    rawOutput = checked.rawOutput;
+    let keywordReport = checked.keywordReport;
+    let validation = checked.validation;
 
     for (let attempt = 0; validation.issues.length > 0 && mode === "llm" && attempt < MAX_LLM_REPAIR_ATTEMPTS; attempt += 1) {
       rawOutput = await callOpenAiCompatibleJson([
@@ -114,13 +134,10 @@ app.post("/api/generate-resume", async (req, res) => {
         { role: "user", content: buildUserPrompt(request, effectiveProfile) },
         { role: "user", content: buildRepairPrompt(rawOutput, validation.issues, request.evidence_cards) }
       ], llmConfig);
-      prepared = prepareGeneratedCandidate(rawOutput);
-      rawOutput = prepared.rawOutput;
-      schemaCheck = prepared.schemaCheck;
-      keywordReport = schemaCheck.success
-        ? scoreKeywords(request.job_description, schemaCheck.data, request.evidence_cards)
-        : undefined;
-      validation = validateGeneratedResume(rawOutput, request.evidence_cards, effectiveProfile, termsProhibitedAsClaims(keywordReport), request.allowed_project_ids);
+      checked = validateCandidate(rawOutput, request, effectiveProfile);
+      rawOutput = checked.rawOutput;
+      keywordReport = checked.keywordReport;
+      validation = checked.validation;
     }
 
     if (!validation.resume || validation.issues.length > 0) {

@@ -30,16 +30,53 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
   },
   {
     canonical: "CI/CD",
-    claimableAliases: ["Jenkins", "GitHub Actions", "Vercel", "Azure DevOps", "TeamCity"],
+    claimableAliases: ["Jenkins", "GitHub Actions", "Vercel", "Azure DevOps", "TeamCity", "production deployment"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "deployment pipelines",
+    aliases: ["deployment pipeline", "build processes", "build process", "configuration and deployment management", "deployment management"],
+    claimableAliases: ["Jenkins", "GitHub Actions", "Vercel", "Azure DevOps", "CI/CD", "production deployment", "code freeze"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "source control management",
+    aliases: ["source control", "version control"],
+    claimableAliases: ["Git", "GitHub Actions"],
     placement: "skill_ok",
     allowInSkills: true,
-    skillLabel: "CI/CD"
+    skillLabel: "Git"
   },
   {
     canonical: "cloud monitoring",
-    claimableAliases: ["CloudWatch Logs", "CloudWatch Insights", "alarms", "logging", "tracing"],
+    aliases: ["monitoring", "monitors", "instrumentation", "alerts", "operational excellence"],
+    claimableAliases: ["CloudWatch Logs", "CloudWatch Insights", "CloudWatch alarms", "alarms", "logging", "tracing", "low-stock alerts"],
     placement: "prefer_bullet",
     allowInSkills: false
+  },
+  {
+    canonical: "metrics",
+    aliases: ["metric"],
+    claimableAliases: ["precision", "recall", "F1", "accuracy", "KPIs", "CloudWatch Insights", "CloudWatch alarms"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "data analytics",
+    aliases: ["analytics", "performing data analytics"],
+    claimableAliases: ["Athena", "Glue", "CloudWatch Insights", "KPI dashboard", "linear regression", "forecasting", "Pandas", "NumPy"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "public cloud services",
+    aliases: ["public cloud", "cloud services"],
+    claimableAliases: ["AWS", "AWS Lambda", "S3", "DynamoDB", "CloudWatch Logs", "CloudFormation"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "AWS"
   },
   {
     canonical: "vector search",
@@ -73,12 +110,49 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
   {
     canonical: "Scrum",
     evidenceOnlyAliases: ["Agile", "Scaled Agile"],
-    placement: "needs_source_update",
+    placement: "prefer_bullet",
     allowInSkills: false
   },
   {
     canonical: "Agile",
     claimableAliases: ["Scaled Agile"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "algorithms",
+    aliases: ["algorithm", "algorithm design", "Algorithms"],
+    claimableAliases: ["regret insertion", "regret-insertion", "route optimization", "recommendation algorithm"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "data structures",
+    aliases: ["data structure"],
+    claimableAliases: ["game state", "state machine", "collision", "save system"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "design patterns",
+    aliases: ["design pattern"],
+    claimableAliases: [
+      "state machine",
+      "state pattern",
+      "command pattern",
+      "command patterns",
+      "factory pattern",
+      "factory patterns",
+      "reusable OOP patterns",
+      "OOP patterns"
+    ],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "user interfaces",
+    aliases: ["user interface", "responsive user interfaces", "responsive UI", "UI", "frontend", "front-end"],
+    claimableAliases: ["React", "React Native", "TypeScript", "JavaScript", "WCAG 2.2", "accessibility"],
     placement: "prefer_bullet",
     allowInSkills: false
   },
@@ -130,6 +204,13 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
     allowInSkills: true,
     skillLabel: "JavaScript",
     skillPriority: 80
+  },
+  {
+    canonical: "containerized systems",
+    aliases: ["containers", "containerized"],
+    claimableAliases: ["Docker"],
+    placement: "prefer_bullet",
+    allowInSkills: false
   },
   {
     canonical: "Docker",

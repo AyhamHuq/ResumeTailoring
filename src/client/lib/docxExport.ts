@@ -1,21 +1,24 @@
 import {
   AlignmentType,
   Document,
-  HeadingLevel,
   Packer,
   Paragraph,
   TextRun,
 } from "docx";
 import { formatContact, formatEducation } from "./profile";
+import { curateSkills } from "../../shared/skills";
 import type { EvidenceCard, GeneratedBullet, GeneratedResume, StaticProfile } from "./types";
 
 const font = "Calibri";
+const bodySize = 21;
+const headingSize = 21;
 
 type BuildDocxInput = {
   profile: StaticProfile | LegacyProfile;
   generatedResume?: GeneratedResume;
   resume?: GeneratedResume;
   evidenceCards?: EvidenceCard[];
+  jobDescription?: string;
 };
 
 type LegacyProfile = {
@@ -33,6 +36,7 @@ type LegacyProfile = {
     graduation?: string;
     gpa?: string;
     location?: string;
+    coursework?: string[];
   }>;
   certifications: string[];
   workExperience?: Array<{
@@ -54,6 +58,9 @@ export async function buildResumeDocx(input: BuildDocxInput): Promise<Blob> {
   if (input.evidenceCards) {
     validateExportableResume(profile, resume, input.evidenceCards);
   }
+  const exportSkills = curateSkills(normalizeSkills(resume.skills), undefined, {
+    jobDescription: input.jobDescription
+  });
 
   const sections = [
     ...nameAndContact(profile),
@@ -62,7 +69,7 @@ export async function buildResumeDocx(input: BuildDocxInput): Promise<Blob> {
     sectionHeading("Work Experience"),
     ...workExperience(profile, resume),
     sectionHeading("Skills"),
-    body(resume.skills.join(" | ")),
+    ...formatSkillLines(exportSkills).map((line) => body(line)),
     sectionHeading("Projects"),
     ...projects(profile, resume),
     sectionHeading("Certifications"),
@@ -72,7 +79,16 @@ export async function buildResumeDocx(input: BuildDocxInput): Promise<Blob> {
   const document = new Document({
     sections: [
       {
-        properties: {},
+        properties: {
+          page: {
+            margin: {
+              top: 720,
+              right: 720,
+              bottom: 720,
+              left: 720
+            }
+          }
+        },
         children: sections,
       },
     ],
@@ -81,10 +97,27 @@ export async function buildResumeDocx(input: BuildDocxInput): Promise<Blob> {
   return Packer.toBlob(document);
 }
 
-export async function exportResumeDocx(profile: StaticProfile, resume: GeneratedResume, evidenceCards: EvidenceCard[]) {
-  const blob = await buildResumeDocx({ profile, generatedResume: resume, evidenceCards });
-  const fileName = `${profile.name.replace(/\s+/g, "_")}_Tailored_Resume.docx`;
+export async function exportResumeDocx(
+  profile: StaticProfile,
+  resume: GeneratedResume,
+  evidenceCards: EvidenceCard[],
+  jobDescription?: string
+) {
+  const blob = await buildResumeDocx({ profile, generatedResume: resume, evidenceCards, jobDescription });
+  const fileName = `${profile.name.replace(/\s+/g, "_")}_Resume.docx`;
   downloadBlob(blob, fileName);
+}
+
+function normalizeSkills(skills: unknown[]): string[] {
+  return skills.map((skill) => {
+    if (typeof skill === "string") {
+      return skill;
+    }
+    if (skill && typeof skill === "object" && "name" in skill && typeof (skill as { name: unknown }).name === "string") {
+      return (skill as { name: string }).name;
+    }
+    return "";
+  }).filter(Boolean);
 }
 
 function normalizeProfile(profile: StaticProfile | LegacyProfile): StaticProfile {
@@ -119,7 +152,8 @@ function normalizeProfile(profile: StaticProfile | LegacyProfile): StaticProfile
         degree: item.degree,
         graduation: item.graduation ?? "",
         gpa: item.gpa,
-        location: item.location
+        location: item.location,
+        coursework: item.coursework
       }),
     certifications: legacy.certifications,
     role_modes: ["auto", "backend", "cloud", "full_stack", "ai", "consulting"],
@@ -138,13 +172,13 @@ function nameAndContact(profile: StaticProfile) {
   return [
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      heading: HeadingLevel.TITLE,
+      spacing: { after: 30 },
       children: [new TextRun({ text: profile.name, bold: true, font, size: 28 })],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 160 },
-      children: [new TextRun({ text: formatContact(profile), font, size: 20 })],
+      spacing: { after: 100 },
+      children: [new TextRun({ text: formatContact(profile), font, size: bodySize })],
     }),
   ];
 }
@@ -170,24 +204,53 @@ function projects(profile: StaticProfile, resume: GeneratedResume) {
 
 function sectionHeading(text: string) {
   return new Paragraph({
-    spacing: { before: 180, after: 80 },
-    children: [new TextRun({ text: text.toUpperCase(), bold: true, font, size: 20 })],
+    spacing: { before: 100, after: 30 },
+    children: [new TextRun({ text: text.toUpperCase(), bold: true, font, size: headingSize })],
   });
 }
 
 function body(text: string, bold = false) {
   return new Paragraph({
-    spacing: { after: 60 },
-    children: [new TextRun({ text, bold, font, size: 20 })],
+    spacing: { after: 35 },
+    children: [new TextRun({ text, bold, font, size: bodySize })],
   });
 }
 
 function bulletParagraph(bullet: GeneratedBullet) {
   return new Paragraph({
     bullet: { level: 0 },
-    spacing: { after: 60 },
-    children: [new TextRun({ text: bullet.text, font, size: 20 })],
+    spacing: { after: 35 },
+    children: [new TextRun({ text: bullet.text, font, size: bodySize })],
   });
+}
+
+function formatSkillLines(skills: string[]): string[] {
+  if (skills.length <= 18) {
+    return [skills.join(" | ")];
+  }
+
+  const remaining = new Set(skills);
+  const categories = [
+    { label: "Languages", terms: ["Java", "Python", "Golang", "TypeScript", "JavaScript", "C#", "C/C++", "SQL", "Bash", "YAML"] },
+    { label: "Cloud/Backend", terms: ["AWS Lambda", "API Gateway", "SQS", "SNS", "DynamoDB", "S3", "CloudWatch Logs", "IAM", "CloudFormation", "CDK", "Ansible", "Spring Boot", "Flask", "REST APIs"] },
+    { label: "AI/Tools", terms: ["LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "Docker", "Jenkins", "GitHub Actions", "Jest", "pytest", "Playwright", "React", "React Native"] }
+  ];
+
+  const lines = categories.map((category) => {
+    const matched = category.terms.filter((term) => remaining.delete(term));
+    return matched.length > 0 ? `${category.label}: ${matched.join(" | ")}` : "";
+  }).filter(Boolean);
+
+  if (remaining.size > 0) {
+    const extra = [...remaining].join(" | ");
+    if (lines.length < 3) {
+      lines.push(`Additional: ${extra}`);
+    } else {
+      lines[lines.length - 1] = `${lines[lines.length - 1]} | ${extra}`;
+    }
+  }
+
+  return lines;
 }
 
 function downloadBlob(blob: Blob, fileName: string) {
