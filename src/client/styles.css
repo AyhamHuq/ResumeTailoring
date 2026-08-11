@@ -217,7 +217,8 @@ button:disabled {
 .action-row,
 .keyword-heading,
 .drawer-header,
-.resume-job-title {
+.resume-job-title,
+.resume-job-line {
   align-items: center;
   display: flex;
   justify-content: space-between;
@@ -295,7 +296,8 @@ button:disabled {
   margin-bottom: 8px;
 }
 
-.resume-job-title span {
+.resume-job-title span,
+.resume-job-line span {
   color: #4b5563;
   font-size: 12px;
   text-align: right;
@@ -476,7 +478,8 @@ button:disabled {
     align-items: flex-start;
   }
 
-  .resume-job-title {
+  .resume-job-title,
+  .resume-job-line {
     align-items: flex-start;
     flex-direction: column;
   }

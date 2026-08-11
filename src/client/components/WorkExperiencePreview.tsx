@@ -1,3 +1,4 @@
+import { formatDateString } from "../lib/docxExport";
 import type { EvidenceCard, GeneratedBullet, GeneratedResume, StaticProfile } from "../lib/types";
 
 interface WorkExperiencePreviewProps {
@@ -15,9 +16,15 @@ export function WorkExperiencePreview({ profile, resume, evidenceCards, onSelect
         if (!staticJob) return null;
         return (
           <div className="resume-job" key={job.job_id}>
-            <div className="resume-job-title">
-              <strong>{staticJob.employer} - {staticJob.title}</strong>
-              <span>{staticJob.location} | {staticJob.dates}</span>
+            <div className="resume-job-header">
+              <div className="resume-job-line">
+                <strong>{staticJob.employer}</strong>
+                <span>{formatDateString(staticJob.dates)}</span>
+              </div>
+              <div className="resume-job-line">
+                <em>{staticJob.title}</em>
+                <span>{staticJob.location}</span>
+              </div>
             </div>
             <ul>
               {job.bullets.map((bullet, index) => (

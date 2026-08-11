@@ -35,7 +35,7 @@ export const ResumeProfileSchema = z.object({
     title: z.string().min(1),
     location: z.string().min(1),
     dates: z.string().min(1)
-  })).min(3),
+  })).min(1),
   allowed_projects: z.array(z.object({
     project_id: ProjectIdSchema,
     display_name: z.string().min(1)

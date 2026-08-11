@@ -1,17 +1,22 @@
 import {
   AlignmentType,
   Document,
+  HeadingLevel,
   Packer,
   Paragraph,
+  TabStopPosition,
+  TabStopType,
   TextRun,
 } from "docx";
-import { formatContact, formatEducation } from "./profile";
+import { formatContact } from "./profile";
 import { curateSkills } from "../../shared/skills";
 import type { EvidenceCard, GeneratedBullet, GeneratedResume, StaticProfile } from "./types";
 
 const font = "Calibri";
 const bodySize = 21;
 const headingSize = 21;
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 type BuildDocxInput = {
   profile: StaticProfile | LegacyProfile;
@@ -65,7 +70,7 @@ export async function buildResumeDocx(input: BuildDocxInput): Promise<Blob> {
   const sections = [
     ...nameAndContact(profile),
     sectionHeading("Education"),
-    ...profile.education.map((item) => body(formatEducation(item))),
+    ...profile.education.flatMap((item) => educationBlock(item)),
     sectionHeading("Work Experience"),
     ...workExperience(profile, resume),
     sectionHeading("Skills"),
@@ -77,6 +82,31 @@ export async function buildResumeDocx(input: BuildDocxInput): Promise<Blob> {
   ];
 
   const document = new Document({
+    title: `${profile.name} Resume`,
+    creator: profile.name,
+    description: "Resume",
+    styles: {
+      paragraphStyles: [
+        {
+          id: "Heading1",
+          name: "Heading 1",
+          basedOn: "Normal",
+          next: "Normal",
+          quickFormat: true,
+          run: { font: "Calibri", size: headingSize, bold: true },
+          paragraph: { spacing: { before: 100, after: 30 } },
+        },
+        {
+          id: "Heading2",
+          name: "Heading 2",
+          basedOn: "Normal",
+          next: "Normal",
+          quickFormat: true,
+          run: { font: "Calibri", size: bodySize, bold: true },
+          paragraph: { spacing: { after: 0 } },
+        },
+      ],
+    },
     sections: [
       {
         properties: {
@@ -168,7 +198,27 @@ function normalizeProfile(profile: StaticProfile | LegacyProfile): StaticProfile
   };
 }
 
+export function formatDateString(dateStr: string): string {
+  return dateStr.replace(/(\d{2})\/(\d{4})/g, (_, month, year) => {
+    return `${MONTHS[parseInt(month, 10) - 1]} ${year}`;
+  });
+}
+
 function nameAndContact(profile: StaticProfile) {
+  const contactParts = [
+    profile.contact.location,
+    profile.contact.email,
+    profile.contact.phone,
+    profile.contact.linkedin,
+    profile.contact.website,
+  ].filter(Boolean);
+
+  const children: TextRun[] = [];
+  contactParts.forEach((part, i) => {
+    if (i > 0) children.push(new TextRun({ text: " | ", font, size: bodySize }));
+    children.push(new TextRun({ text: part, font, size: bodySize }));
+  });
+
   return [
     new Paragraph({
       alignment: AlignmentType.CENTER,
@@ -178,20 +228,81 @@ function nameAndContact(profile: StaticProfile) {
     new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { after: 100 },
-      children: [new TextRun({ text: formatContact(profile), font, size: bodySize })],
+      children,
     }),
   ];
 }
 
+function educationBlock(edu: StaticProfile["education"][number]): Paragraph[] {
+  const paragraphs: Paragraph[] = [
+    new Paragraph({
+      spacing: { after: 0 },
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+      children: [
+        new TextRun({ text: edu.degree, bold: true, font, size: bodySize }),
+        ...(edu.graduation ? [
+          new TextRun({ text: "\t", font, size: bodySize }),
+          new TextRun({ text: edu.graduation, font, size: bodySize }),
+        ] : []),
+      ],
+    }),
+    new Paragraph({
+      spacing: { after: 35 },
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+      children: [
+        new TextRun({
+          text: [edu.school, edu.location].filter(Boolean).join(", "),
+          font, size: bodySize,
+        }),
+        ...(edu.gpa ? [
+          new TextRun({ text: "\t", font, size: bodySize }),
+          new TextRun({ text: `GPA: ${edu.gpa}`, font, size: bodySize }),
+        ] : []),
+      ],
+    }),
+  ];
+  if (edu.coursework?.length) {
+    paragraphs.push(body(`Relevant Coursework: ${edu.coursework.join(", ")}`));
+  }
+  return paragraphs;
+}
+
 function workExperience(profile: StaticProfile, resume: GeneratedResume) {
-  return resume.work_experience.flatMap((job) => {
+  const paragraphs: Paragraph[] = [];
+  let lastEmployer = "";
+
+  for (const job of resume.work_experience) {
     const staticJob = profile.employers.find((item) => item.job_id === job.job_id);
-    if (!staticJob) return [];
-    return [
-      body(`${staticJob.employer} - ${staticJob.title} | ${staticJob.location} | ${staticJob.dates}`, true),
-      ...job.bullets.map((bullet) => bulletParagraph(bullet)),
-    ];
-  });
+    if (!staticJob) continue;
+    const dates = formatDateString(staticJob.dates);
+    const sameEmployer = staticJob.employer === lastEmployer;
+
+    if (!sameEmployer) {
+      paragraphs.push(new Paragraph({
+        heading: HeadingLevel.HEADING_2,
+        spacing: { after: 0 },
+        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+        children: [
+          new TextRun({ text: `${staticJob.employer} \u2013 ${staticJob.location}`, bold: true, font, size: bodySize }),
+        ],
+      }));
+      lastEmployer = staticJob.employer;
+    }
+
+    paragraphs.push(new Paragraph({
+      spacing: { after: 35 },
+      tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+      children: [
+        new TextRun({ text: staticJob.title, italics: true, font, size: bodySize }),
+        new TextRun({ text: "\t", font, size: bodySize }),
+        new TextRun({ text: dates, font, size: bodySize }),
+      ],
+    }));
+
+    paragraphs.push(...job.bullets.map((bullet) => bulletParagraph(bullet)));
+  }
+
+  return paragraphs;
 }
 
 function projects(profile: StaticProfile, resume: GeneratedResume) {
@@ -204,6 +315,7 @@ function projects(profile: StaticProfile, resume: GeneratedResume) {
 
 function sectionHeading(text: string) {
   return new Paragraph({
+    heading: HeadingLevel.HEADING_1,
     spacing: { before: 100, after: 30 },
     children: [new TextRun({ text: text.toUpperCase(), bold: true, font, size: headingSize })],
   });

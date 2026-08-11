@@ -58,7 +58,7 @@ export function calculateResumeFitReport(
   };
   const targetMinLines = Math.ceil(pageBudget.targetEstimatedLines * (pageBudget.targetMinFillPercent / 100));
   const targetMaxLines = Math.floor(pageBudget.targetEstimatedLines * (pageBudget.targetMaxFillPercent / 100));
-  const educationLines = Math.max(1, profile?.education.length ?? 1);
+  const educationLines = Math.max(1, (profile?.education.length ?? 1) * 3);
   const certificationLines = Math.max(1, profile?.certifications.length ?? 2);
   const workBullets = resume.work_experience.reduce((total, job) => total + job.bullets.length, 0);
   const projectBullets = resume.projects.reduce((total, project) => total + project.bullets.length, 0);
@@ -67,7 +67,7 @@ export function calculateResumeFitReport(
   estimatedLines += 2 + educationLines;
   estimatedLines += 2 + resume.work_experience.reduce((total, job, index) => {
     const jobGap = index < resume.work_experience.length - 1 ? 1 : 0;
-    return total + 1 + bulletLines(job.bullets) + jobGap;
+    return total + 2 + bulletLines(job.bullets) + jobGap;
   }, 0);
   estimatedLines += 2 + paragraphLines(resume.skills.join(" | "));
   estimatedLines += 2 + Math.max(1, resume.projects.reduce((total, project) => total + 1 + bulletLines(project.bullets), 0));

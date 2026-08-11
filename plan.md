@@ -6,7 +6,7 @@
 - Supporting documents:
   - `data/documents/Ayham Huq - Master Resume.docx`
   - `data/documents/Ayham Huq - Resume.docx`
-  - `data/documents/Ayham_Resume_BrainDump_consolidated_final.docx`
+  - `data/documents/Resume - Braindump.docx`
 - Base app directories were created before implementation paused:
   - `src/`
   - `src/client/`
