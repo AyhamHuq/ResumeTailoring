@@ -152,6 +152,29 @@ describe("skill curation contract", () => {
     expect(curated).not.toEqual(expect.arrayContaining(["CI/CD", "OOP", "Agile", "design patterns"]));
   });
 
+  runSkillTest("normalizes web and GitHub slash aliases", () => {
+    expect(curateSkills, "Expose curateSkills(skills, maxItems?, context?).").toBeTypeOf("function");
+
+    const curated = curateSkills?.([
+      "JavaScript/TypeScript",
+      "Git/Github",
+      "html",
+      "css",
+      "NodeJS",
+    ], 8, {
+      jobDescription: "Need JavaScript/TypeScript, Git/Github, HTML, CSS, and Node.js.",
+    }) as string[];
+
+    expect(curated).toEqual(expect.arrayContaining([
+      "TypeScript",
+      "Git",
+      "HTML",
+      "CSS",
+      "Node.js",
+    ]));
+  });
+
+
   runSkillTest("normalizes mobile skills while keeping MVVM as bullet evidence", () => {
     expect(curateSkills, "Expose curateSkills(skills, maxItems?, context?).").toBeTypeOf("function");
 

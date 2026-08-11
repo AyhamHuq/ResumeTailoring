@@ -95,18 +95,16 @@ export function generateMockResume(
   roleMode: RoleMode,
   jobDescription = ""
 ): GeneratedResume {
+  const captechConsultantGolf = findEvidence(evidenceCards, ["captech_consultant_golf_engine", "captech_golf_algorithm_golang", "captech_golf_10000_itineraries"], "captech_consultant");
+  const captechConsultantProdSupport = findEvidence(evidenceCards, ["captech_consultant_golf_production_support"], "captech_consultant");
+  const captechConsultantTheming = findEvidence(evidenceCards, ["captech_consultant_beverage_theming"], "captech_consultant");
   const captechMessaging = findEvidence(evidenceCards, ["captech_f100_spring_lambda_dynamodb", "captech_f100_idempotency"], "captech");
-  const captechIdempotency = findEvidence(evidenceCards, ["captech_f100_idempotency"], "captech");
   const captechDeployment = findEvidence(evidenceCards, ["captech_f100_jenkins_coordination"], "captech");
   const captechBedrock = findEvidence(evidenceCards, ["captech_bedrock_rag_opensearch", "captech_bedrock_precision_recall"], "captech");
-  const captechGolf = findEvidence(evidenceCards, ["captech_golf_algorithm_golang", "captech_golf_10000_itineraries"], "captech");
-  const captechGolfDelivery = findEvidence(evidenceCards, ["captech_golf_serverless_cicd"], "captech");
-  const publicisRag = findEvidence(evidenceCards, ["publicis_langchain_rag"], "publicis_sapient");
-  const publicisBackend = findEvidence(evidenceCards, ["publicis_flask_azure_sql_backend"], "publicis_sapient");
-  const publicisQuality = findEvidence(evidenceCards, ["publicis_solid_testing_cicd"], "publicis_sapient");
+  const captechServerless = findEvidence(evidenceCards, ["captech_serverless_cicd", "captech_golf_serverless_cicd"], "captech");
   const publicisClient = findEvidence(evidenceCards, ["publicis_healthcare_predictive_app"], "publicis_sapient");
+  const publicisBackend = findEvidence(evidenceCards, ["publicis_flask_azure_sql_backend"], "publicis_sapient");
   const sallieLogs = findEvidence(evidenceCards, ["sallie_mae_config_sns_centralization", "sallie_mae_200_accounts"], "sallie_mae");
-  const sallieIam = findEvidence(evidenceCards, ["sallie_mae_cross_account_iam"], "sallie_mae");
   const sallieIac = findEvidence(evidenceCards, ["sallie_mae_ansible_cloudformation"], "sallie_mae");
   const jd = jobDescription.toLowerCase();
   const wantsObjectOrientedProject = /object[-\s]?oriented|\boop\b|design patterns?|data structures?|algorithm/.test(jd);
@@ -154,30 +152,34 @@ export function generateMockResume(
     ],
     work_experience: [
       {
+        job_id: "captech_consultant",
+        bullets: [
+          withBulletCounts({ text: "Built a Go recommendation engine using a regret-insertion algorithm for the PGA Championship, generating 10,000+ attendee itineraries with 78% accepted.", evidence_refs: [captechConsultantGolf.id], jd_keywords: ["Golang", "algorithms"] }),
+          withBulletCounts({ text: "Owned production support for the engine and frontend throughout the live tournament, monitoring and resolving issues in real time.", evidence_refs: [captechConsultantProdSupport.id], jd_keywords: ["production support"] }),
+          withBulletCounts({ text: "Retrofitted a theming layer across a React application for a leading beverage company, converting hardcoded styles to design tokens.", evidence_refs: [captechConsultantTheming.id], jd_keywords: ["React", "design tokens"] })
+        ]
+      },
+      {
         job_id: "captech",
         bullets: [
-          withBulletCounts({ text: "Extended Spring APIs, Lambda enrichment, DynamoDB metadata, and SQS FIFO queues to migrate real-time customer messaging into Maestro.", evidence_refs: [captechMessaging.id], jd_keywords: ["Spring", "AWS", "messaging"] }),
-          withBulletCounts({ text: "Implemented idempotent retry and reprocessing behavior so SQS-backed messages could recover cleanly without duplicate customer notifications.", evidence_refs: [captechIdempotency.id], jd_keywords: ["SQS", "idempotency", "reliability"] }),
-          withBulletCounts({ text: "Led cross-team Jenkins release coordination across Maestro, ingestion, and product teams during a high-risk production code freeze.", evidence_refs: [captechDeployment.id], jd_keywords: ["Jenkins", "production deployment"] }),
-          withBulletCounts({ text: "Improved Bedrock RAG precision and recall metrics by over 30% using OpenSearch retrieval, reranking, and evaluator-model scoring.", evidence_refs: [captechBedrock.id], jd_keywords: ["Bedrock", "RAG", "OpenSearch", "metrics"] }),
-          withBulletCounts({ text: "Built a Golang regret-insertion itinerary algorithm plus a React/TypeScript iframe with GitHub Actions, Docker, and Playwright tests.", evidence_refs: [captechGolf.id, captechGolfDelivery.id], jd_keywords: ["Golang", "React", "algorithms", "CI/CD", "automated testing"] })
+          withBulletCounts({ text: "Consulted for a Fortune 100 financial company to migrate a direct messaging service to AWS and Maestro using Spring APIs, DynamoDB, Lambda, and SQS.", evidence_refs: [captechMessaging.id], jd_keywords: ["Spring", "AWS", "messaging"] }),
+          withBulletCounts({ text: "Operated across 3 teams to coordinate Jenkins production deployments during a code freeze on a messaging system serving millions of customers.", evidence_refs: [captechDeployment.id], jd_keywords: ["Jenkins", "production deployment"] }),
+          withBulletCounts({ text: "Improved precision and recall by over 30% for an AWS Bedrock AI analysis tool through reranking and model-based evaluation.", evidence_refs: [captechBedrock.id], jd_keywords: ["Bedrock", "RAG", "metrics"] }),
+          withBulletCounts({ text: "Architected a serverless pattern with Docker for local development alongside GitHub Actions CI/CD to deploy to S3 with API Gateway Lambda.", evidence_refs: [captechServerless.id], jd_keywords: ["Docker", "CI/CD", "serverless"] })
         ]
       },
       {
         job_id: "publicis_sapient",
         bullets: [
-          withBulletCounts({ text: "Built a personalized LangChain RAG chatbot using OpenAI embeddings and user healthcare data to answer plan and cost questions.", evidence_refs: [publicisRag.id], jd_keywords: ["LangChain", "RAG"] }),
-          withBulletCounts({ text: "Owned most Flask REST backend work, including Azure SQL schema integration for a React Native healthcare recommendation app.", evidence_refs: [publicisBackend.id], jd_keywords: ["Flask", "REST", "SQL"] }),
-          withBulletCounts({ text: "Applied SOLID design, Jest and pytest coverage, Vercel CI/CD, and client presentation practices across an Agile intern team.", evidence_refs: [publicisQuality.id], jd_keywords: ["SOLID", "testing", "CI/CD"] }),
-          withBulletCounts({ text: "Partnered on an 8-person Fortune 25 healthcare engagement, translating predictive savings requirements into a working consumer app.", evidence_refs: [publicisClient.id], jd_keywords: ["Agile", "client delivery"] })
+          withBulletCounts({ text: "Collaborated on an Agile client project for a Fortune 25 company to enhance user experiences on a healthcare app with personalized analytics.", evidence_refs: [publicisClient.id], jd_keywords: ["Agile", "client delivery"] }),
+          withBulletCounts({ text: "Served as primary backend engineer, building a Python Flask API with an Azure SQL backend and a LangChain RAG chatbot over OpenAI embeddings.", evidence_refs: [publicisBackend.id], jd_keywords: ["Flask", "LangChain", "RAG"] })
         ]
       },
       {
         job_id: "sallie_mae",
         bullets: [
-          withBulletCounts({ text: "Centralized AWS Config SNS alerts from nearly 200 accounts into S3 and CloudWatch Logs for cloud monitoring and operations visibility.", evidence_refs: [sallieLogs.id], jd_keywords: ["AWS", "CloudWatch", "logging", "alerts", "monitoring"] }),
-          withBulletCounts({ text: "Implemented cross-account IAM trust and least-privilege permissions so spoke-account Lambdas could write to centralized logging resources.", evidence_refs: [sallieIam.id], jd_keywords: ["IAM", "security"] }),
-          withBulletCounts({ text: "Automated production infrastructure with Ansible and CloudFormation for Lambda, S3, Athena, and Glue data analytics deployments.", evidence_refs: [sallieIac.id], jd_keywords: ["Ansible", "CloudFormation", "IaC", "data analytics"] })
+          withBulletCounts({ text: "Innovated a system to redirect thousands of daily config SNS messages across hundreds of AWS accounts to CloudWatch Logs and S3 using Lambda.", evidence_refs: [sallieLogs.id], jd_keywords: ["AWS", "CloudWatch", "Lambda"] }),
+          withBulletCounts({ text: "Wrote an Ansible script and CloudFormation template in YAML to automate code deployment and deploy resources such as Athena queries with Glue and S3.", evidence_refs: [sallieIac.id], jd_keywords: ["Ansible", "CloudFormation", "IaC"] })
         ]
       }
     ],

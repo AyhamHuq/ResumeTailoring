@@ -112,7 +112,7 @@ Some project facts.
 
     const cards = cardList(parseEvidence?.(`
 # Consolidated Skills and Keywords
-AWS, Lambda, SQS, SNS, DynamoDB, API Gateway, S3, CloudWatch Logs, IAM, CloudFormation, Ansible, Spring, Flask, Azure SQL, React Native, PyTorch, FAISS.
+AWS, Lambda, SQS, SNS, DynamoDB, API Gateway, S3, CloudWatch Logs, IAM, CloudFormation, Ansible, Spring, Flask, Azure SQL, React Native, HTML, CSS, Node.js, PyTorch, FAISS.
 
 # CapTech Ventures
 ## Fortune 100 Financial Company - Direct Messaging Migration
@@ -161,13 +161,10 @@ Personally owned backend functionality with strict Firebase authentication for u
       "captech_f100_jenkins_coordination",
       "captech_bedrock_rag_opensearch",
       "captech_bedrock_multi_agent_eval",
-      "captech_golf_algorithm_golang",
-      "captech_golf_serverless_cicd",
+      "captech_serverless_cicd",
       "captech_coffee_dashboard_accessibility",
       "captech_coffee_dashboard_kpis",
       "publicis_flask_azure_sql_backend",
-      "publicis_solid_testing_cicd",
-      "sallie_mae_config_sns_centralization",
       "sallie_mae_cross_account_iam",
       "sallie_mae_ansible_cloudformation",
       "aep_hackathon_second_place",
@@ -177,5 +174,11 @@ Personally owned backend functionality with strict Firebase authentication for u
       "travel_budgeting_plaid_firebase_auth",
       "travel_budgeting_backend_expense_tracking",
     ]));
+    expect(cards.find((card) => card.id === "consolidated_skills_keywords")?.skills).toEqual(
+      expect.arrayContaining(["HTML", "CSS", "Node.js"]),
+    );
+    expect(cards.find((card) => card.id === "captech_serverless_cicd")?.skills).toEqual(
+      expect.arrayContaining(["HTML", "CSS", "Git", "GitHub Actions"]),
+    );
   });
 });

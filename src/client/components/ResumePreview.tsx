@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { FileSearch } from "lucide-react";
 import { ProjectPreviewInline } from "./ProjectPreview";
 import { WorkExperiencePreview } from "./WorkExperiencePreview";
-import { formatContact, formatEducation } from "../lib/profile";
+import { formatContact } from "../lib/profile";
 import type { EvidenceCard, GeneratedBullet, GeneratedResume, StaticProfile } from "../lib/types";
 
 interface ResumePreviewProps {
@@ -30,7 +30,21 @@ export function ResumePreview({ profile, resume, evidenceCards, onSelectBullet }
           </header>
           {resume.summary && <p className="resume-summary">{resume.summary}</p>}
           <ResumeSection title="Education">
-            {profile.education.map((item) => <p key={`${item.school}-${item.degree}`}>{formatEducation(item)}</p>)}
+            {profile.education.map((item) => (
+              <div key={`${item.school}-${item.degree}`} className="resume-education-block">
+                <div className="resume-job-line">
+                  <strong>{item.degree}</strong>
+                  {item.graduation && <span>{item.graduation}</span>}
+                </div>
+                <div className="resume-job-line">
+                  <span>{[item.school, item.location].filter(Boolean).join(", ")}</span>
+                  {item.gpa && <span>GPA: {item.gpa}</span>}
+                </div>
+                {item.coursework && item.coursework.length > 0 && (
+                  <p>Relevant Coursework: {item.coursework.join(", ")}</p>
+                )}
+              </div>
+            ))}
           </ResumeSection>
           <ResumeSection title="Work Experience">
             <WorkExperiencePreview

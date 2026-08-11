@@ -20,18 +20,17 @@ type ValidateGeneratedResume = (
 
 const context = {
   evidenceCards: [
+    { id: "captech_consultant_golf_engine", parent_job_id: "captech_consultant", evidence_text: "Go recommendation engine regret-insertion algorithm PGA Championship 10,000+ itineraries 78% accepted." },
+    { id: "captech_consultant_golf_production_support", parent_job_id: "captech_consultant", evidence_text: "Owned production support for engine and frontend during live tournament." },
+    { id: "captech_consultant_beverage_theming", parent_job_id: "captech_consultant", evidence_text: "React theming layer beverage company design tokens light mode." },
     { id: "captech_f100_spring_lambda_dynamodb", parent_job_id: "captech", evidence_text: "Spring Lambda DynamoDB Maestro messaging work." },
     { id: "captech_f100_idempotency", parent_job_id: "captech", evidence_text: "SQS idempotency retry work." },
-    { id: "captech_f100_jenkins_coordination", parent_job_id: "captech", evidence_text: "Jenkins production deployment across teams." },
+    { id: "captech_f100_jenkins_coordination", parent_job_id: "captech", evidence_text: "Jenkins production deployment across teams during code freeze serving millions of customers." },
     { id: "captech_bedrock_rag_opensearch", parent_job_id: "captech", evidence_text: "Bedrock RAG OpenSearch reranking work." },
-    { id: "captech_golf_algorithm_golang", parent_job_id: "captech", evidence_text: "Golang regret insertion route optimization algorithm generated 10,000 itineraries." },
-    { id: "captech_golf_serverless_cicd", parent_job_id: "captech", project_id: "captech_golf_itinerary", evidence_text: "React TypeScript responsive user interfaces deployed with Docker, GitHub Actions, and Playwright automated tests.", skills: ["React", "TypeScript", "responsive user interfaces", "Docker", "GitHub Actions", "Playwright", "automated testing", "CI/CD", "deployment pipelines"] },
-    { id: "publicis_langchain_rag", parent_job_id: "publicis_sapient", evidence_text: "LangChain RAG healthcare chatbot work." },
-    { id: "publicis_flask_azure_sql_backend", parent_job_id: "publicis_sapient", evidence_text: "Flask REST backend with Azure SQL." },
-    { id: "publicis_solid_testing_cicd", parent_job_id: "publicis_sapient", evidence_text: "SOLID Jest pytest Vercel CI/CD work." },
+    { id: "captech_serverless_cicd", parent_job_id: "captech", project_id: "captech_golf_itinerary", evidence_text: "React TypeScript responsive user interfaces deployed with Docker, GitHub Actions, and Playwright automated tests.", skills: ["React", "TypeScript", "responsive user interfaces", "Docker", "GitHub Actions", "Playwright", "automated testing", "CI/CD", "deployment pipelines"] },
     { id: "publicis_healthcare_predictive_app", parent_job_id: "publicis_sapient", evidence_text: "Fortune 25 healthcare predictive recommendations app and client presentation." },
-    { id: "sallie_mae_config_sns_centralization", parent_job_id: "sallie_mae", evidence_text: "AWS Config SNS alerts to S3 and CloudWatch Logs across almost 200 accounts." },
-    { id: "sallie_mae_cross_account_iam", parent_job_id: "sallie_mae", evidence_text: "Cross-account IAM least-privilege trust policies." },
+    { id: "publicis_flask_azure_sql_backend", parent_job_id: "publicis_sapient", evidence_text: "Primary backend engineer Flask API Azure SQL LangChain RAG chatbot OpenAI embeddings delivered in 6 weeks." },
+    { id: "sallie_mae_config_sns_centralization", parent_job_id: "sallie_mae", evidence_text: "SNS messages across hundreds of AWS accounts to CloudWatch Logs and S3 using Lambda." },
     { id: "sallie_mae_ansible_cloudformation", parent_job_id: "sallie_mae", evidence_text: "Ansible CloudFormation Athena Glue infrastructure as code." },
     { id: "aep_pytorch_faiss_20000_records", project_id: "aep_ai_safety", evidence_text: "PyTorch and FAISS project." },
     { id: "aep_react_native_flask_sqlite", project_id: "aep_ai_safety", evidence_text: "React Native Flask SQLite project workflow." },
@@ -43,7 +42,7 @@ const context = {
     { id: "travel_budgeting_backend_expense_tracking", project_id: "travel_budgeting_app", evidence_text: "Owned backend functionality for expense tracking, receipt tracking, and trip budgets.", skills: ["expense tracking", "receipt tracking", "travel budgeting"] },
   ],
   allowedProjectIds: ["aep_ai_safety", "mario_monogame", "coffee_dashboard", "travel_budgeting_app"],
-  allowedJobIds: ["captech", "publicis_sapient", "sallie_mae"],
+  allowedJobIds: ["captech_consultant", "captech", "publicis_sapient", "sallie_mae"],
 };
 
 const motivatingJdFixture = `
@@ -58,39 +57,54 @@ function validResume(overrides: Record<string, unknown> = {}) {
   return {
     role_mode: "backend",
     skills: [
-      "Java", "Python", "TypeScript", "AWS Lambda", "API Gateway", "SQS", "SNS", "DynamoDB",
+      "Java", "Python", "TypeScript", "AWS Lambda", "API Gateway", "SQS", "DynamoDB",
       "S3", "CloudWatch Logs", "IAM", "CloudFormation", "Ansible", "Spring Boot", "Flask",
-      "REST APIs", "React Native", "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch",
-      "Jest", "pytest", "Jenkins", "Vercel"
+      "REST APIs", "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch",
+      "Jenkins", "Bedrock"
     ],
     work_experience: [
+      {
+        job_id: "captech_consultant",
+        bullets: [
+          {
+            text: "Built a Go recommendation engine using a regret-insertion algorithm for the PGA Championship, generating 10,000+ attendee itineraries.",
+            evidence_refs: ["captech_consultant_golf_engine"],
+            jd_keywords: ["Golang"],
+          },
+          {
+            text: "Owned production support for the engine and frontend throughout the live tournament.",
+            evidence_refs: ["captech_consultant_golf_production_support"],
+            jd_keywords: ["production support"],
+          },
+          {
+            text: "Retrofitted a theming layer across a React application for a leading beverage company, converting hardcoded styles to design tokens.",
+            evidence_refs: ["captech_consultant_beverage_theming"],
+            jd_keywords: ["React"],
+          },
+        ],
+      },
       {
         job_id: "captech",
         bullets: [
           {
-            text: "Extended Spring APIs, Lambda enrichment, DynamoDB metadata, and SQS FIFO queues to migrate real-time customer messaging into Maestro.",
+            text: "Consulted for a Fortune 100 financial company to migrate a direct messaging service to AWS and Maestro using Spring APIs, DynamoDB, Lambda, and SQS.",
             evidence_refs: ["captech_f100_spring_lambda_dynamodb"],
             jd_keywords: ["AWS"],
           },
           {
-            text: "Implemented idempotent retry and reprocessing behavior so SQS-backed messages could recover cleanly without duplicate customer notifications.",
-            evidence_refs: ["captech_f100_idempotency"],
-            jd_keywords: ["queues"],
-          },
-          {
-            text: "Led cross-team Jenkins release coordination across Maestro, ingestion, and product teams during a high-risk production code freeze.",
+            text: "Operated across 3 teams to coordinate Jenkins production deployments during a code freeze on a messaging system serving millions of customers.",
             evidence_refs: ["captech_f100_jenkins_coordination"],
             jd_keywords: ["Jenkins"],
           },
           {
-            text: "Improved Bedrock RAG precision and recall using OpenSearch retrieval, reranking, multi-agent design, and evaluator-model scoring.",
+            text: "Improved precision and recall by over 30% for an AWS Bedrock AI analysis tool through reranking and model-based evaluation.",
             evidence_refs: ["captech_bedrock_rag_opensearch"],
             jd_keywords: ["RAG"],
           },
           {
-            text: "Built a Golang regret-insertion itinerary algorithm and React iframe that generated 10,000+ live tournament itineraries.",
-            evidence_refs: ["captech_golf_algorithm_golang"],
-            jd_keywords: ["Golang"],
+            text: "Architected a serverless pattern with Docker for local development alongside GitHub Actions CI/CD to deploy to S3 with API Gateway Lambda.",
+            evidence_refs: ["captech_serverless_cicd"],
+            jd_keywords: ["Docker", "CI/CD"],
           },
         ],
       },
@@ -98,24 +112,14 @@ function validResume(overrides: Record<string, unknown> = {}) {
         job_id: "publicis_sapient",
         bullets: [
           {
-            text: "Built a personalized LangChain RAG chatbot using OpenAI embeddings and user healthcare data to answer plan and cost questions.",
-            evidence_refs: ["publicis_langchain_rag"],
-            jd_keywords: ["RAG"],
-          },
-          {
-            text: "Owned most Flask REST backend work, including Azure SQL schema integration for a React Native healthcare recommendation app.",
-            evidence_refs: ["publicis_flask_azure_sql_backend"],
-            jd_keywords: ["Flask"],
-          },
-          {
-            text: "Applied SOLID design, Jest and pytest coverage, Vercel CI/CD, and client presentation practices across an Agile intern team.",
-            evidence_refs: ["publicis_solid_testing_cicd"],
-            jd_keywords: ["testing"],
-          },
-          {
-            text: "Partnered on an 8-person Fortune 25 healthcare engagement, translating predictive savings requirements into a working consumer app.",
+            text: "Collaborated on an Agile client project for a Fortune 25 company to enhance user experiences on a healthcare app.",
             evidence_refs: ["publicis_healthcare_predictive_app"],
             jd_keywords: ["Agile"],
+          },
+          {
+            text: "Served as primary backend engineer, building a Python Flask API with an Azure SQL backend and a LangChain RAG chatbot over OpenAI embeddings.",
+            evidence_refs: ["publicis_flask_azure_sql_backend"],
+            jd_keywords: ["Flask", "RAG"],
           },
         ],
       },
@@ -123,17 +127,12 @@ function validResume(overrides: Record<string, unknown> = {}) {
         job_id: "sallie_mae",
         bullets: [
           {
-            text: "Centralized AWS Config SNS alerts from nearly 200 accounts into S3 and CloudWatch Logs, reducing daily emails to zero.",
+            text: "Innovated a system to redirect thousands of daily config SNS messages across hundreds of AWS accounts to CloudWatch Logs and S3 using Lambda.",
             evidence_refs: ["sallie_mae_config_sns_centralization"],
             jd_keywords: ["AWS"],
           },
           {
-            text: "Implemented cross-account IAM trust and least-privilege permissions so spoke-account Lambdas could write to centralized logging resources.",
-            evidence_refs: ["sallie_mae_cross_account_iam"],
-            jd_keywords: ["IAM"],
-          },
-          {
-            text: "Automated production infrastructure with Ansible and CloudFormation for Lambda, S3, CloudWatch Logs, Athena, and Glue deployments.",
+            text: "Wrote an Ansible script and CloudFormation template in YAML to automate code deployment and deploy Athena queries with Glue and S3.",
             evidence_refs: ["sallie_mae_ansible_cloudformation"],
             jd_keywords: ["IaC"],
           },
@@ -353,23 +352,11 @@ describe("generated resume validation contract", () => {
         if (job.job_id === "captech") {
           return {
             ...job,
-            bullets: job.bullets.map((bullet, index) => index === 2
+            bullets: job.bullets.map((bullet, index) => index === 1
               ? {
                 ...bullet,
                 text: "Led cross-team release coordination across Maestro, ingestion, and product teams during a high-risk production code freeze.",
                 jd_keywords: ["production deployment"],
-              }
-              : bullet),
-          };
-        }
-        if (job.job_id === "publicis_sapient") {
-          return {
-            ...job,
-            bullets: job.bullets.map((bullet, index) => index === 2
-              ? {
-                ...bullet,
-                text: "Applied SOLID design plus Jest and pytest coverage while presenting quality practices across an Agile intern team.",
-                jd_keywords: ["testing"],
               }
               : bullet),
           };
@@ -385,7 +372,7 @@ describe("generated resume validation contract", () => {
 
     expect(result.success ?? result.valid).toBe(false);
     expect(result.issues?.map((issue) => issue.code)).toEqual(expect.arrayContaining([
-      "keyword_prefer_bullet_not_covered",
+      "coverage_plan_missing_target",
     ]));
   });
 
@@ -481,7 +468,7 @@ describe("generated resume validation contract", () => {
         "JavaScript", "React", "Java", "REST APIs", "Docker", "Jenkins", "Playwright",
         "AWS", "Spring Boot", "CloudWatch Logs", "GitHub Actions", "TypeScript",
         "Python", "Git", "AWS Lambda", "SQS", "DynamoDB", "CloudFormation", "Ansible",
-        "Jest", "pytest", "Flask"
+        "Flask"
       ],
       work_experience: base.work_experience.map((job) => {
         if (job.job_id !== "captech") {
@@ -489,11 +476,11 @@ describe("generated resume validation contract", () => {
         }
         return {
           ...job,
-          bullets: job.bullets.map((bullet, index) => index === 4
+          bullets: job.bullets.map((bullet, index) => index === 3
             ? {
               ...bullet,
-              text: "Built a Golang regret-insertion itinerary algorithm and React TypeScript responsive user interfaces with Docker, GitHub Actions, and Playwright tests.",
-              evidence_refs: ["captech_golf_algorithm_golang", "captech_golf_serverless_cicd"],
+              text: "Architected a serverless pattern with Docker and React TypeScript responsive user interfaces, GitHub Actions, and Playwright tests.",
+              evidence_refs: ["captech_serverless_cicd"],
               jd_keywords: ["algorithms", "React", "Docker", "CI/CD", "automated testing"],
             }
             : bullet),
@@ -525,18 +512,18 @@ describe("generated resume validation contract", () => {
       ],
       coverage_plan: [
         { target_term: "Object-Oriented", canonical: "Object-Oriented", selected_evidence_refs: ["mario_collision_state_command_factory"], section: "projects", project_id: "mario_monogame", bullet_index: 0 },
-        { target_term: "algorithms", canonical: "algorithms", selected_evidence_refs: ["captech_golf_algorithm_golang"], section: "work_experience", job_id: "captech", bullet_index: 4 },
+        { target_term: "algorithms", canonical: "algorithms", selected_evidence_refs: ["captech_consultant_golf_engine"], section: "work_experience", job_id: "captech_consultant", bullet_index: 0 },
         { target_term: "data structures", canonical: "data structures", selected_evidence_refs: ["mario_physics_enemy_save_systems"], section: "projects", project_id: "mario_monogame", bullet_index: 1 },
         { target_term: "design patterns", canonical: "design patterns", selected_evidence_refs: ["mario_collision_state_command_factory"], section: "projects", project_id: "mario_monogame", bullet_index: 0 },
-        { target_term: "CI/CD", canonical: "CI/CD", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 2 },
-        { target_term: "deployment pipelines", canonical: "deployment pipelines", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 2 },
-        { target_term: "automated testing", canonical: "automated testing", selected_evidence_refs: ["captech_golf_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 4 },
-        { target_term: "containerized systems", canonical: "containerized systems", selected_evidence_refs: ["captech_golf_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 4 },
-        { target_term: "user interfaces", canonical: "user interfaces", selected_evidence_refs: ["captech_golf_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 4 },
-        { target_term: "Agile", canonical: "Agile", selected_evidence_refs: ["publicis_solid_testing_cicd"], section: "work_experience", job_id: "publicis_sapient", bullet_index: 2 },
+        { target_term: "CI/CD", canonical: "CI/CD", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 1 },
+        { target_term: "deployment pipelines", canonical: "deployment pipelines", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 1 },
+        { target_term: "automated testing", canonical: "automated testing", selected_evidence_refs: ["captech_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 3 },
+        { target_term: "containerized systems", canonical: "containerized systems", selected_evidence_refs: ["captech_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 3 },
+        { target_term: "user interfaces", canonical: "user interfaces", selected_evidence_refs: ["captech_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 3 },
+        { target_term: "Agile", canonical: "Agile", selected_evidence_refs: ["publicis_healthcare_predictive_app"], section: "work_experience", job_id: "publicis_sapient", bullet_index: 0 },
         { target_term: "cloud monitoring", canonical: "cloud monitoring", selected_evidence_refs: ["sallie_mae_config_sns_centralization"], section: "work_experience", job_id: "sallie_mae", bullet_index: 0 },
-        { target_term: "metrics", canonical: "metrics", selected_evidence_refs: ["captech_bedrock_rag_opensearch"], section: "work_experience", job_id: "captech", bullet_index: 3 },
-        { target_term: "data analytics", canonical: "data analytics", selected_evidence_refs: ["sallie_mae_ansible_cloudformation"], section: "work_experience", job_id: "sallie_mae", bullet_index: 2 },
+        { target_term: "metrics", canonical: "metrics", selected_evidence_refs: ["captech_bedrock_rag_opensearch"], section: "work_experience", job_id: "captech", bullet_index: 2 },
+        { target_term: "data analytics", canonical: "data analytics", selected_evidence_refs: ["sallie_mae_ansible_cloudformation"], section: "work_experience", job_id: "sallie_mae", bullet_index: 1 },
       ],
     });
 

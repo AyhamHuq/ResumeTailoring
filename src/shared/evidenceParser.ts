@@ -5,9 +5,11 @@ const SKILL_SECTION = "Consolidated Skills and Keywords";
 const SKILL_TERMS = [
   "AWS", "Lambda", "API Gateway", "SQS", "SNS", "DynamoDB", "Kinesis", "Spring", "Spring Boot",
   "Java", "Kotlin", "Golang", "Python", "TypeScript", "JavaScript", "ES6+", "ES6", "React", "React Native",
+  "HTML", "CSS", "Node.js",
   "Android", "Jetpack Compose", "MVVM", "Model-View-ViewModel", "LiveData", "Firebase",
   "Firebase Authentication", "Plaid API",
-  "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "NLP", "C#", "Flask", "RESTful APIs",
+  "Bedrock", "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "NLP", "C#", "Flask", "Tailwind CSS",
+  "Tailwind", "AG Grid", "Amplitude", "RESTful APIs",
   "RESTful API", "REST APIs", "REST API", "RESTful", "Azure SQL", "SQLite", "CloudFormation",
   "CDK", "Ansible", "Jenkins", "GitHub Actions", "TeamCity", "Azure DevOps", "Vercel", "Docker", "Git",
   "CloudWatch", "CloudWatch Logs", "CloudWatch Insights", "CloudWatch alarms", "Athena", "Glue", "IAM", "Jest",
@@ -29,6 +31,44 @@ type KnownFact = {
 };
 
 const KNOWN_FACTS: KnownFact[] = [
+  // --- CapTech Ventures: Software Consultant (07/2026 – Present) ---
+  {
+    id: "captech_consultant_golf_engine",
+    type: "work_project_fact",
+    title: "Go recommendation engine for PGA Championship itineraries",
+    section: "CapTech Ventures",
+    parent_job_id: "captech_consultant",
+    project_id: "captech_golf_itinerary",
+    required: [/golang|go\b/i, /regret.?insertion|recommendation/i, /10,?000|itinerar/i],
+    skills: ["Golang", "algorithms", "algorithm design", "recommendation systems", "route optimization", "regret insertion heuristic"],
+    metrics: ["10,000+ itineraries", "78% accepted without regeneration"],
+    role_tags: ["backend", "consulting"]
+  },
+  {
+    id: "captech_consultant_golf_production_support",
+    type: "work_project_fact",
+    title: "9-day production support for engine and frontend during live PGA tournament",
+    section: "CapTech Ventures",
+    parent_job_id: "captech_consultant",
+    project_id: "captech_golf_itinerary",
+    required: [/production support|live tournament/i, /engine|frontend/i],
+    skills: ["production support", "React", "TypeScript", "Golang", "incident response", "Amplitude"],
+    metrics: ["9 days including weekends"],
+    role_tags: ["backend", "full_stack", "consulting"]
+  },
+  {
+    id: "captech_consultant_beverage_theming",
+    type: "work_project_fact",
+    title: "Enterprise React theming layer for leading beverage company",
+    section: "CapTech Ventures",
+    parent_job_id: "captech_consultant",
+    project_id: "captech_beverage_theming",
+    required: [/theming|design tokens/i, /beverage|light mode/i],
+    skills: ["React", "TypeScript", "CSS", "Tailwind CSS", "AG Grid", "design tokens", "theming", "responsive user interfaces"],
+    metrics: ["70+ files", "1,000+ lines of theming"],
+    role_tags: ["full_stack", "consulting"]
+  },
+  // --- CapTech Ventures: Associate Software Consultant (07/2025 – 07/2026) ---
   {
     id: "captech_f100_idempotency",
     type: "work_project_fact",
@@ -54,12 +94,13 @@ const KNOWN_FACTS: KnownFact[] = [
   {
     id: "captech_f100_jenkins_coordination",
     type: "work_project_fact",
-    title: "Cross-team Jenkins production deployment coordination",
+    title: "Cross-team Jenkins production deployment during code freeze",
     section: "CapTech Ventures",
     parent_job_id: "captech",
     project_id: "captech_f100_messaging",
     required: [/jenkins/i, /production deployment|production release|code freeze/i, /3 teams|three teams|cross-functional/i],
     skills: ["Jenkins", "CI/CD", "production deployment", "cross-functional coordination", "change management"],
+    metrics: ["millions of customers"],
     role_tags: ["consulting", "backend", "cloud"]
   },
   {
@@ -96,16 +137,35 @@ const KNOWN_FACTS: KnownFact[] = [
     role_tags: ["ai", "cloud", "consulting"]
   },
   {
-    id: "captech_golf_10000_itineraries",
+    id: "captech_serverless_cicd",
     type: "work_project_fact",
-    title: "Golf itinerary generation at 10,000 record scale",
+    title: "Serverless architecture with Docker and GitHub Actions CI/CD",
     section: "CapTech Ventures",
     parent_job_id: "captech",
     project_id: "captech_golf_itinerary",
-    required: [/golf/i, /10,?000|itinerar/i],
-    skills: ["itinerary generation", "automation", "data processing"],
-    metrics: ["10,000 itineraries"],
-    role_tags: ["backend", "consulting"]
+    required: [/api gateway/i, /lambda/i, /github actions/i, /s3/i],
+    skills: ["React", "TypeScript", "JavaScript", "HTML", "CSS", "responsive user interfaces", "AWS Lambda", "API Gateway", "S3", "Docker", "Git", "GitHub Actions", "CI/CD", "deployment pipelines", "Playwright", "automated testing"],
+    role_tags: ["full_stack", "cloud", "backend"]
+  },
+  {
+    id: "captech_coffee_dashboard_accessibility",
+    type: "project_fact",
+    title: "Coffee shop analytics dashboard with accessibility and forecasting",
+    section: "CapTech Ventures",
+    project_id: "coffee_dashboard",
+    required: [/coffee shop|cafe/i, /react/i, /lambda|api gateway/i, /wcag|linear regression|forecasting/i],
+    skills: ["React", "JavaScript", "HTML", "CSS", "responsive user interfaces", "Python", "AWS Lambda", "API Gateway", "S3", "CDK", "SQLite", "linear regression", "WCAG 2.2"],
+    role_tags: ["full_stack", "cloud", "backend"]
+  },
+  {
+    id: "captech_coffee_dashboard_kpis",
+    type: "project_fact",
+    title: "Coffee shop KPI, inventory, and forecasting dashboard",
+    section: "CapTech Ventures",
+    project_id: "coffee_dashboard",
+    required: [/daily revenue|profit margins|inventory/i, /low stock|sales tracking/i, /forecasting|linear regression/i],
+    skills: ["React", "Python", "SQLite", "data analytics", "linear regression", "analytics dashboard", "inventory tracking", "metrics", "alerts"],
+    role_tags: ["full_stack", "backend", "cloud"]
   },
   {
     id: "captech_golf_algorithm_golang",
@@ -174,24 +234,14 @@ const KNOWN_FACTS: KnownFact[] = [
   {
     id: "publicis_flask_azure_sql_backend",
     type: "work_project_fact",
-    title: "Flask REST backend with Azure SQL integration",
+    title: "Primary backend engineer: Flask API with Azure SQL and LangChain RAG chatbot",
     section: "Publicis Sapient",
     parent_job_id: "publicis_sapient",
     project_id: "publicis_healthcare_app",
-    required: [/flask/i, /rest api|backend/i, /azure sql|schema/i],
-    skills: ["Python", "Flask", "REST APIs", "Azure SQL", "schema design", "React Native"],
-    role_tags: ["backend", "full_stack"]
-  },
-  {
-    id: "publicis_solid_testing_cicd",
-    type: "work_project_fact",
-    title: "SOLID backend design, tests, and CI/CD",
-    section: "Publicis Sapient",
-    parent_job_id: "publicis_sapient",
-    project_id: "publicis_healthcare_app",
-    required: [/solid/i, /jest|pytest/i, /vercel|ci\/cd/i],
-    skills: ["SOLID", "object-oriented design", "Jest", "pytest", "Vercel", "CI/CD", "automated testing", "unit testing", "Agile"],
-    role_tags: ["backend", "full_stack"]
+    required: [/flask/i, /azure sql|backend/i, /langchain|rag|openai embeddings/i],
+    skills: ["Python", "Flask", "REST APIs", "Azure SQL", "LangChain", "RAG", "OpenAI embeddings", "React Native"],
+    metrics: ["delivered in 6 weeks"],
+    role_tags: ["backend", "ai", "full_stack"]
   },
   {
     id: "sallie_mae_200_accounts",
@@ -208,13 +258,13 @@ const KNOWN_FACTS: KnownFact[] = [
   {
     id: "sallie_mae_config_sns_centralization",
     type: "work_project_fact",
-    title: "AWS Config SNS centralization into S3 and CloudWatch Logs",
+    title: "AWS Config SNS centralization across hundreds of accounts",
     section: "Sallie Mae",
     parent_job_id: "sallie_mae",
     project_id: "sallie_mae_cloud",
-    required: [/aws config/i, /sns/i, /s3/i, /cloudwatch logs/i],
-    skills: ["AWS Config", "SNS", "S3", "CloudWatch Logs", "CloudWatch alarms", "Python", "boto3", "logging", "cloud monitoring", "monitoring", "alerts"],
-    metrics: ["1,000+ daily emails", "~200 accounts"],
+    required: [/sns/i, /s3|cloudwatch logs/i, /lambda/i],
+    skills: ["AWS Lambda", "SNS", "S3", "CloudWatch Logs", "Python", "boto3", "logging", "cloud monitoring"],
+    metrics: ["thousands of daily messages", "hundreds of AWS accounts"],
     role_tags: ["cloud", "backend"]
   },
   {
@@ -371,7 +421,7 @@ function sentenceAround(sectionText: string, fact: KnownFact): string {
 
 function genericCardsForSection(section: string, sectionText: string): EvidenceCard[] {
   const parent_job_id = section === "CapTech Ventures"
-    ? "captech"
+    ? "captech_consultant"
     : section === "Publicis Sapient"
       ? "publicis_sapient"
       : section === "Sallie Mae"

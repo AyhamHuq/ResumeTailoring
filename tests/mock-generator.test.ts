@@ -20,10 +20,11 @@ const profile = {
     website: "ayhamhuq.com",
   },
   education: [{ school: "Ohio State University", degree: "B.S. Computer Science", graduation: "May 2025", gpa: "3.95" }],
-  certifications: ["AWS Certified Solutions Architect - Associate", "AWS Certified AI Practitioner - Associate"],
+  certifications: ["AWS Certified Solutions Architect - Associate", "AWS Certified AI Practitioner - Foundational"],
   role_modes: ["auto", "backend", "cloud", "full_stack", "ai", "consulting"],
   employers: [
-    { job_id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", location: "Chicago, IL", dates: "07/2025 - Present" },
+    { job_id: "captech_consultant", employer: "CapTech Ventures", title: "Software Consultant", location: "Chicago, IL", dates: "07/2026 - Present" },
+    { job_id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", location: "Chicago, IL", dates: "07/2025 - 07/2026" },
     { job_id: "publicis_sapient", employer: "Publicis Sapient", title: "Software Engineer Intern", location: "Chicago, IL", dates: "06/2024 - 08/2024" },
     { job_id: "sallie_mae", employer: "Sallie Mae", title: "Cloud Engineer Intern", location: "Indianapolis, IN", dates: "05/2023 - 08/2023" },
   ],
@@ -36,17 +37,16 @@ const profile = {
 };
 
 const evidenceCards = [
+  ["captech_consultant_golf_engine", "captech_consultant"],
+  ["captech_consultant_golf_production_support", "captech_consultant"],
+  ["captech_consultant_beverage_theming", "captech_consultant"],
   ["captech_f100_spring_lambda_dynamodb", "captech"],
-  ["captech_f100_idempotency", "captech"],
   ["captech_f100_jenkins_coordination", "captech"],
   ["captech_bedrock_rag_opensearch", "captech"],
-  ["captech_golf_algorithm_golang", "captech"],
-  ["publicis_langchain_rag", "publicis_sapient"],
-  ["publicis_flask_azure_sql_backend", "publicis_sapient"],
-  ["publicis_solid_testing_cicd", "publicis_sapient"],
+  ["captech_serverless_cicd", "captech"],
   ["publicis_healthcare_predictive_app", "publicis_sapient"],
+  ["publicis_flask_azure_sql_backend", "publicis_sapient"],
   ["sallie_mae_config_sns_centralization", "sallie_mae"],
-  ["sallie_mae_cross_account_iam", "sallie_mae"],
   ["sallie_mae_ansible_cloudformation", "sallie_mae"],
   ["aep_pytorch_faiss_20000_records", undefined, "aep_ai_safety"],
   ["aep_react_native_flask_sqlite", undefined, "aep_ai_safety"],
@@ -101,10 +101,11 @@ describe("mock resume generation contract", () => {
     const jobs = resume.work_experience as Array<{ job_id: string; bullets: unknown[] }>;
     const projects = resume.projects as Array<{ bullets: unknown[] }>;
 
-    expect(jobs.find((job) => job.job_id === "captech")?.bullets).toHaveLength(5);
-    expect(jobs.find((job) => job.job_id === "publicis_sapient")?.bullets).toHaveLength(4);
-    expect(jobs.find((job) => job.job_id === "sallie_mae")?.bullets).toHaveLength(3);
-    expect(projects.reduce((total, project) => total + project.bullets.length, 0)).toBeGreaterThanOrEqual(3);
+    expect(jobs.find((job) => job.job_id === "captech_consultant")?.bullets).toHaveLength(3);
+    expect(jobs.find((job) => job.job_id === "captech")?.bullets).toHaveLength(4);
+    expect(jobs.find((job) => job.job_id === "publicis_sapient")?.bullets).toHaveLength(2);
+    expect(jobs.find((job) => job.job_id === "sallie_mae")?.bullets).toHaveLength(2);
+    expect(projects.reduce((total, project) => total + project.bullets.length, 0)).toBeGreaterThanOrEqual(2);
 
     const validation = validateGeneratedResume?.(resume, {
       evidenceCards,

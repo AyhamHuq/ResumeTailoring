@@ -25,16 +25,23 @@ export const STATIC_PROFILE: StaticProfile = {
   ],
   certifications: [
     "AWS Certified Solutions Architect - Associate",
-    "AWS Certified AI Practitioner - Associate"
+    "AWS Certified AI Practitioner - Foundational"
   ],
   role_modes: ["auto", "backend", "cloud", "full_stack", "ai", "consulting"],
   employers: [
+    {
+      job_id: "captech_consultant",
+      employer: "CapTech Ventures",
+      title: "Software Consultant",
+      location: "Chicago, Illinois",
+      dates: "07/2026 - Present"
+    },
     {
       job_id: "captech",
       employer: "CapTech Ventures",
       title: "Associate Software Consultant",
       location: "Chicago, Illinois",
-      dates: "07/2025 - Present"
+      dates: "07/2025 - 07/2026"
     },
     {
       job_id: "publicis_sapient",

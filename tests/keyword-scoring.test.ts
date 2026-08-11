@@ -337,6 +337,47 @@ Automated testing frameworks such as Karate, Playwright, Cypress, Selenium.
     ]));
   });
 
+  runKeywordTest("recognizes slash-combined web and GitHub wording from grounded frontend evidence", () => {
+    expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
+      .toBeTypeOf("function");
+
+    const report = classifyKeywords?.({
+      jobDescription: "Need JavaScript/TypeScript, HTML and CSS, Node.js services, and Git/Github workflows.",
+      generatedResume: null,
+      evidenceCards: [
+        {
+          id: "consolidated_skills_keywords",
+          type: "skill_fact",
+          title: "Consolidated skills and keywords",
+          evidence_text: "Languages: JavaScript, TypeScript. Backend/API: Node.js. DevOps/tools: Git, GitHub Actions.",
+          skills: ["JavaScript", "TypeScript", "Node.js", "Git", "GitHub Actions"],
+        },
+        {
+          id: "captech_golf_serverless_cicd",
+          type: "work_project_fact",
+          evidence_text: "Built React TypeScript frontend on S3 with responsive user interfaces.",
+          skills: ["React", "TypeScript", "JavaScript", "HTML", "CSS", "responsive user interfaces", "Git", "GitHub Actions"],
+        },
+      ],
+    }) as KeywordReport;
+
+    expect(report.supported_but_omitted_for_space).toEqual(expect.arrayContaining([
+      "JavaScript/TypeScript",
+      "HTML",
+      "CSS",
+      "Node.js",
+      "Git/GitHub",
+    ]));
+    expect(report.unsupported).not.toEqual(expect.arrayContaining([
+      "JavaScript/TypeScript",
+      "HTML",
+      "CSS",
+      "Node.js",
+      "Git/GitHub",
+    ]));
+  });
+
+
   runKeywordTest("does not satisfy exact tools from alternatives without an active example group", () => {
     expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
       .toBeTypeOf("function");

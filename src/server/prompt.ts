@@ -56,7 +56,7 @@ function projectSelectionRules(jobDescription: string, evidenceCards: EvidenceCa
 function bulletTargetInstruction(canonical: string): string {
   const normalized = canonical.toLowerCase();
   if (normalized === "containerized systems") {
-    return "Must be covered in a work/project bullet by mentioning Docker or containerized deployment/testing work. Use captech_golf_serverless_cicd when available; Docker in Skills does not count.";
+    return "Must be covered in a work/project bullet by mentioning Docker or containerized deployment/testing work. Use captech_serverless_cicd when available; Docker in Skills does not count.";
   }
   if (normalized === "automated testing" || normalized === "unit testing") {
     return "Must be covered in a bullet by mentioning supported test work such as Playwright, Jest, pytest, JUnit, or API testing. Testing tools in Skills do not count.";
@@ -103,7 +103,7 @@ function candidateEvidenceFromIssue(issue: ValidationIssue, evidenceCards: Evide
 function targetedInstructionForIssue(issue: ValidationIssue): string {
   const message = issue.message.toLowerCase();
   if (message.includes("containerized systems")) {
-    return "Rewrite the suggested bullet to mention Docker/containerized work using captech_golf_serverless_cicd. Example shape: Built React TypeScript responsive UI with Docker, GitHub Actions, and Playwright tests. Keep it grounded and update coverage_plan to that bullet.";
+    return "Rewrite the suggested bullet to mention Docker/containerized work using captech_serverless_cicd. Example shape: Built React TypeScript responsive UI with Docker, GitHub Actions, and Playwright tests. Keep it grounded and update coverage_plan to that bullet.";
   }
   if (message.includes("automated testing")) {
     return "Rewrite the suggested bullet to mention the supported testing tool in the candidate evidence, such as Playwright, Jest, or pytest. Update coverage_plan to that bullet.";
@@ -131,6 +131,7 @@ export function buildSystemPrompt(): string {
     "Skills is not a dumping ground for uncovered job-description keywords.",
     "Use bullet examples like CI/CD/deployment pipelines through Jenkins or GitHub Actions deployment work, containerized systems through Docker in a bullet, OOP/design patterns through SOLID or MonoGame pattern work, UI through React/TypeScript interface work, testing through Playwright/Jest/pytest work, monitoring/alerts through CloudWatch work, and analytics through Athena/Glue or dashboard evidence.",
     "Do not rewrite static profile data, employers, titles, dates, locations, education, or certifications.",
+    "work_experience must contain exactly one entry per job_id in the profile; never merge multiple roles at the same employer into a single entry.",
     "Every generated bullet must include evidence_refs pointing to specific evidence card ids.",
     "Use distinct, specific evidence_refs when adding bullets; do not repeat one broad evidence card for an entire job.",
     "Unsupported job-description terms must be listed in unsupported_terms instead of claimed.",
@@ -168,8 +169,8 @@ export function buildUserPrompt(request: GenerateResumeRequest, profile: ResumeP
     page_fit_contract: {
       target: "90-95% of one page",
       hard_rule: "Do not leave the page sparse. Prefer adding grounded work/project bullets before trimming.",
-      work_density: "CapTech exactly 5 bullets, Publicis Sapient exactly 4 bullets, Sallie Mae exactly 3 bullets.",
-      project_density: "Select 1-2 projects with 3-4 total project bullets.",
+      work_density: "work_experience must have exactly 4 entries: captech_consultant (Software Consultant, 3 bullets), captech (Associate Software Consultant, 4 bullets), publicis_sapient (2 bullets), sallie_mae (2 bullets). Never merge captech_consultant and captech into one entry.",
+      project_density: "Select 1-2 projects with 2-4 total project bullets.",
       compression_rule: "Only compress or remove content when the hard max is exceeded; never pad with unsupported claims."
     },
     output_shape: {
@@ -181,7 +182,7 @@ export function buildUserPrompt(request: GenerateResumeRequest, profile: ResumeP
           selected_evidence_refs: ["captech_f100_jenkins_coordination"],
           section: "work_experience",
           job_id: "captech",
-          bullet_index: 2
+          bullet_index: 1
         },
         {
           target_term: "design patterns",
@@ -194,6 +195,7 @@ export function buildUserPrompt(request: GenerateResumeRequest, profile: ResumeP
       ],
       skills: ["ordered source-grounded skill strings"],
       work_experience: [
+        { job_id: "captech_consultant", bullets: [{ text: "string", evidence_refs: ["evidence_id"], jd_keywords: ["keyword"] }] },
         { job_id: "captech", bullets: [{ text: "string", evidence_refs: ["evidence_id"], jd_keywords: ["keyword"] }] },
         { job_id: "publicis_sapient", bullets: [{ text: "string", evidence_refs: ["evidence_id"], jd_keywords: ["keyword"] }] },
         { job_id: "sallie_mae", bullets: [{ text: "string", evidence_refs: ["evidence_id"], jd_keywords: ["keyword"] }] }
@@ -247,6 +249,7 @@ export function buildRepairPrompt(previousOutput: unknown, issues: ValidationIss
       "Do not return the same bullet counts when validation says the resume is underfilled.",
       "Preserve strong existing bullets; make targeted edits to the bullets named in validation_issues and targeted_repairs when possible.",
       "If resume_under_target_length, add grounded bullets from the same evidence cards before adding skills.",
+      "If missing_work_experience, add a separate work_experience entry for that job_id with the correct bullet count; never merge two roles at the same employer into one entry.",
       "If job_under_min_bullets, add bullets for that job using valid evidence_refs.",
       "If project_count or project_under_min_bullets, return a projects array with 1-2 allowed projects and 3-4 total project bullets.",
       "For OOP, object-oriented design, data structures, algorithms, or design patterns, prefer the mario_monogame project when its evidence refs are available.",
@@ -255,7 +258,7 @@ export function buildRepairPrompt(previousOutput: unknown, issues: ValidationIss
       "If coverage_plan_missing_target or coverage_plan_unused_target, update coverage_plan and the named bullet so selected_evidence_refs are actually used by that bullet.",
       "For Android, Kotlin, MVVM, mobile app architecture, financial API integration, Plaid, Firebase, or expense tracking, prefer travel_budgeting_app when its evidence refs are available.",
       "If required_project_missing, add the project_id named in the validation issue with bullets using that project's evidence refs.",
-      "Required density after repair: CapTech 5 bullets, Publicis Sapient 4 bullets, Sallie Mae 3 bullets, projects 3-4 total bullets, at least 15 bullets overall.",
+      "Required density after repair: CapTech Software Consultant 3 bullets, CapTech Associate 4 bullets, Publicis Sapient 2 bullets, Sallie Mae 2 bullets, projects 2-4 total bullets, at least 13 bullets overall.",
       "If resume_over_hard_max, compress bullets first, then remove project bullets before work bullets."
     ],
     previous_output: previousOutput,

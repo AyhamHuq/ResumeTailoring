@@ -43,8 +43,8 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
   },
   {
     canonical: "source control management",
-    aliases: ["source control", "version control"],
-    claimableAliases: ["Git", "GitHub Actions"],
+    aliases: ["source control", "version control", "Git/GitHub", "Git / GitHub", "GitHub"],
+    claimableAliases: ["Git", "GitHub Actions", "Azure DevOps"],
     placement: "skill_ok",
     allowInSkills: true,
     skillLabel: "Git"
@@ -232,6 +232,39 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
     allowInSkills: true,
     skillLabel: "JavaScript",
     skillPriority: 80
+  },
+  {
+    canonical: "TypeScript",
+    aliases: ["JavaScript/TypeScript", "JavaScript / TypeScript", "JS/TS"],
+    claimableAliases: ["JavaScript"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "TypeScript",
+    skillPriority: 82
+  },
+  {
+    canonical: "HTML",
+    aliases: ["HTML5"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "HTML",
+    skillPriority: 62
+  },
+  {
+    canonical: "CSS",
+    aliases: ["CSS3"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "CSS",
+    skillPriority: 62
+  },
+  {
+    canonical: "Node.js",
+    aliases: ["NodeJS", "Node"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Node.js",
+    skillPriority: 76
   },
   {
     canonical: "containerized systems",

@@ -1,17 +1,18 @@
 export const ROLE_MODES = ["auto", "backend", "cloud", "full_stack", "ai", "consulting"] as const;
-export const JOB_IDS = ["captech", "publicis_sapient", "sallie_mae"] as const;
+export const JOB_IDS = ["captech_consultant", "captech", "publicis_sapient", "sallie_mae"] as const;
 export const PROJECT_IDS = ["aep_ai_safety", "mario_monogame", "coffee_dashboard", "travel_budgeting_app"] as const;
 
 export const SECTION_BUDGETS = {
   workExperience: {
-    captech: { minBullets: 5, maxBullets: 5 },
-    publicis_sapient: { minBullets: 4, maxBullets: 4 },
-    sallie_mae: { minBullets: 3, maxBullets: 3 }
+    captech_consultant: { minBullets: 3, maxBullets: 3 },
+    captech: { minBullets: 4, maxBullets: 4 },
+    publicis_sapient: { minBullets: 2, maxBullets: 2 },
+    sallie_mae: { minBullets: 2, maxBullets: 2 }
   },
   projects: {
     minProjects: 1,
     maxProjects: 2,
-    minTotalBullets: 3,
+    minTotalBullets: 2,
     maxTotalBullets: 4,
     bulletsPerProject: { minBullets: 1, maxBullets: 4 }
   },
@@ -30,7 +31,7 @@ export const SECTION_BUDGETS = {
     targetMinFillPercent: 90,
     targetMaxFillPercent: 95,
     hardMaxEstimatedLines: 68,
-    minTotalBullets: 15
+    minTotalBullets: 13
   }
 } as const;
 
