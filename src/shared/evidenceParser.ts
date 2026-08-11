@@ -168,6 +168,48 @@ const KNOWN_FACTS: KnownFact[] = [
     role_tags: ["full_stack", "backend", "cloud"]
   },
   {
+    id: "captech_golf_algorithm_golang",
+    type: "work_project_fact",
+    title: "Golang regret-insertion itinerary recommendation algorithm",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_golf_itinerary",
+    required: [/golang|go\b/i, /regret insertion|route optimization|recommendation/i, /configuration-driven|swappable|hardcoded/i],
+    skills: ["Golang", "algorithms", "algorithm design", "recommendation systems", "route optimization", "regret insertion heuristic", "configuration-driven design"],
+    role_tags: ["backend", "consulting"]
+  },
+  {
+    id: "captech_golf_serverless_cicd",
+    type: "work_project_fact",
+    title: "Serverless golf itinerary architecture and CI/CD",
+    section: "CapTech Ventures",
+    parent_job_id: "captech",
+    project_id: "captech_golf_itinerary",
+    required: [/api gateway/i, /lambda/i, /github actions/i, /s3/i],
+    skills: ["React", "TypeScript", "JavaScript", "responsive user interfaces", "AWS Lambda", "API Gateway", "S3", "Docker", "Git", "GitHub Actions", "CI/CD", "deployment pipelines", "Playwright", "automated testing"],
+    role_tags: ["full_stack", "cloud", "backend"]
+  },
+  {
+    id: "captech_coffee_dashboard_accessibility",
+    type: "project_fact",
+    title: "Coffee shop analytics dashboard with accessibility and forecasting",
+    section: "CapTech Ventures",
+    project_id: "coffee_dashboard",
+    required: [/coffee shop|cafe/i, /react/i, /lambda|api gateway/i, /wcag|linear regression|forecasting/i],
+    skills: ["React", "JavaScript", "responsive user interfaces", "Python", "AWS Lambda", "API Gateway", "S3", "CDK", "SQLite", "linear regression", "WCAG 2.2"],
+    role_tags: ["full_stack", "cloud", "backend"]
+  },
+  {
+    id: "captech_coffee_dashboard_kpis",
+    type: "project_fact",
+    title: "Coffee shop KPI, inventory, and forecasting dashboard",
+    section: "CapTech Ventures",
+    project_id: "coffee_dashboard",
+    required: [/daily revenue|profit margins|inventory/i, /low stock|sales tracking/i, /forecasting|linear regression/i],
+    skills: ["React", "Python", "SQLite", "data analytics", "linear regression", "analytics dashboard", "inventory tracking", "metrics", "alerts"],
+    role_tags: ["full_stack", "backend", "cloud"]
+  },
+  {
     id: "publicis_langchain_rag",
     type: "work_project_fact",
     title: "LangChain RAG internship project",

@@ -174,6 +174,7 @@ describe("skill curation contract", () => {
     ]));
   });
 
+
   runSkillTest("normalizes mobile skills while keeping MVVM as bullet evidence", () => {
     expect(curateSkills, "Expose curateSkills(skills, maxItems?, context?).").toBeTypeOf("function");
 
