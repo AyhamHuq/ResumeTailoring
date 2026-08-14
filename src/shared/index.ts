@@ -5,4 +5,5 @@ export * from "./keywordTaxonomy";
 export * from "./keywords";
 export * from "./schemas";
 export * from "./skills";
+export * from "./matchScore";
 export * from "./validation";

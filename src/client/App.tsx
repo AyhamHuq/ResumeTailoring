@@ -5,6 +5,7 @@ import { ExportButton } from "./components/ExportButton";
 import { GenerateButton } from "./components/GenerateButton";
 import { JDInput } from "./components/JDInput";
 import { KeywordEvidencePanel } from "./components/KeywordEvidencePanel";
+import { MatchScoreCard } from "./components/MatchScoreCard";
 import { ProfileSummary } from "./components/ProfileSummary";
 import { ProjectPreview } from "./components/ProjectPreview";
 import { ResumePreview } from "./components/ResumePreview";
@@ -15,6 +16,7 @@ import { generateResume } from "./lib/api";
 import { classifyKeywords } from "./lib/keywords";
 import { loadState, saveState } from "./lib/storage";
 import { STATIC_PROFILE } from "./lib/profile";
+import { buildMasterResumeForScoring, calculateMatchScoreComparison } from "../shared/matchScore";
 import { curateSkills } from "../shared/skills";
 import type {
   AppState,
@@ -60,6 +62,23 @@ export function App() {
     () => classifyKeywords(state.jobDescription, displayResume, state.evidenceCards),
     [state.jobDescription, displayResume, state.evidenceCards],
   );
+
+  const masterResume = useMemo(() => buildMasterResumeForScoring(), []);
+
+  const masterKeywordReport = useMemo(
+    () => classifyKeywords(state.jobDescription, masterResume as never, state.evidenceCards),
+    [state.jobDescription, masterResume, state.evidenceCards],
+  );
+
+  const matchScoreComparison = useMemo(() => {
+    if (!state.jobDescription.trim()) return null;
+    return calculateMatchScoreComparison({
+      jobDescription: state.jobDescription,
+      profile: STATIC_PROFILE,
+      masterKeywordReport,
+      tailoredKeywordReport: displayResume ? keywordReport : null,
+    });
+  }, [state.jobDescription, masterKeywordReport, displayResume, keywordReport]);
 
   async function handleBraindumpText(text: string, sourceName: string) {
     setUploadError(null);
@@ -191,6 +210,9 @@ export function App() {
         </section>
 
         <aside className="right-rail">
+          {matchScoreComparison && (
+            <MatchScoreCard comparison={matchScoreComparison} showDelta={Boolean(displayResume)} />
+          )}
           <KeywordEvidencePanel report={keywordReport} />
           <ProjectPreview
             resume={displayResume}
