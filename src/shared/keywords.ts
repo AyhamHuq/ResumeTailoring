@@ -129,9 +129,29 @@ function technicalFallbackTokens(text: string): string[] {
   return tokens.filter((term) => !STOP_WORDS.has(term.toLowerCase()));
 }
 
+function splitSlashTerms(text: string, knownMatches: string[]): string[] {
+  const knownNormalized = new Set(knownMatches.map(normalize));
+  const pattern = /[A-Za-z0-9#+.-]+(?:\/[A-Za-z0-9#+.-]+)+/g;
+  const results: string[] = [];
+
+  for (const match of text.matchAll(pattern)) {
+    const token = match[0];
+    if (knownNormalized.has(normalize(token))) {
+      continue;
+    }
+    const parts = token.split("/")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0 && !STOP_WORDS.has(part.toLowerCase()));
+    results.push(...parts);
+  }
+
+  return results;
+}
+
 export function extractKeywords(text: string): string[] {
   const known = KNOWN_TERMS.filter((term) => containsTerm(text, term));
-  return dedupePreserveCase([...known, ...technicalFallbackTokens(text)]).slice(0, 80);
+  const slashParts = splitSlashTerms(text, known);
+  return dedupePreserveCase([...known, ...slashParts, ...technicalFallbackTokens(text)]).slice(0, 80);
 }
 
 function taxonomyEntryFor(term: string): KeywordTaxonomyEntry | undefined {

@@ -397,4 +397,42 @@ Automated testing frameworks such as Karate, Playwright, Cypress, Selenium.
 
     expect(report.unsupported).toEqual(expect.arrayContaining(["Cypress"]));
   });
+
+  runKeywordTest("splits unknown slash terms into separate keywords while preserving known compound terms", () => {
+    expect(classifyKeywords, "Expose classifyKeywords({ jobDescription, generatedResume, evidenceCards }).")
+      .toBeTypeOf("function");
+
+    const report = classifyKeywords?.({
+      jobDescription: "Need design/development experience, CI/CD pipelines, and build/deploy automation.",
+      generatedResume: null,
+      evidenceCards: [
+        {
+          id: "design_evidence",
+          type: "work_project_fact",
+          evidence_text: "Led design of a serverless dashboard application.",
+          skills: ["design"],
+        },
+        {
+          id: "cicd_evidence",
+          type: "work_project_fact",
+          evidence_text: "Built CI/CD pipelines with GitHub Actions.",
+          skills: ["CI/CD", "GitHub Actions"],
+        },
+      ],
+    }) as KeywordReport;
+
+    const detail = (term: string) => report.details?.find((item) => item.term === term);
+
+    // "CI/CD" is a known compound term — should NOT be split
+    expect(detail("CI/CD")).toBeDefined();
+    expect(report.unsupported).not.toEqual(expect.arrayContaining(["CI", "CD"]));
+
+    // "design/development" is unknown — should be split into "design" and "development"
+    expect(detail("design") ?? detail("Design")).toBeDefined();
+    expect(detail("development") ?? detail("Development")).toBeDefined();
+
+    // "build/deploy" is unknown — should be split
+    expect(detail("build") ?? detail("Build")).toBeDefined();
+    expect(detail("deploy") ?? detail("Deploy")).toBeDefined();
+  });
 });
