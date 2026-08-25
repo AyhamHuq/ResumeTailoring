@@ -516,6 +516,7 @@ describe("generated resume validation contract", () => {
         { target_term: "data structures", canonical: "data structures", selected_evidence_refs: ["mario_physics_enemy_save_systems"], section: "projects", project_id: "mario_monogame", bullet_index: 1 },
         { target_term: "design patterns", canonical: "design patterns", selected_evidence_refs: ["mario_collision_state_command_factory"], section: "projects", project_id: "mario_monogame", bullet_index: 0 },
         { target_term: "CI/CD", canonical: "CI/CD", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 1 },
+        { target_term: "DevOps", canonical: "DevOps", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 1 },
         { target_term: "deployment pipelines", canonical: "deployment pipelines", selected_evidence_refs: ["captech_f100_jenkins_coordination"], section: "work_experience", job_id: "captech", bullet_index: 1 },
         { target_term: "automated testing", canonical: "automated testing", selected_evidence_refs: ["captech_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 3 },
         { target_term: "containerized systems", canonical: "containerized systems", selected_evidence_refs: ["captech_serverless_cicd"], section: "work_experience", job_id: "captech", bullet_index: 3 },

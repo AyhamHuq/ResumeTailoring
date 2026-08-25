@@ -25,7 +25,7 @@ function hasProjectEvidence(evidenceCards: EvidenceCard[], projectId: string): b
 }
 
 function projectSelectionRules(jobDescription: string, evidenceCards: EvidenceCard[]) {
-  const requiresMario = /\b(?:oop|object[-\s]?oriented|design patterns?|data structures?|algorithm(?:s| design)?)\b/i.test(jobDescription)
+  const requiresMario = /\b(?:game|gameplay|monogame|graphics|rendering|unity|unreal)\b|c#/i.test(jobDescription)
     && hasProjectEvidence(evidenceCards, "mario_monogame");
   const requiresTravel = /\b(?:android|kotlin|jetpack compose|mvvm|model[-\s]?view[-\s]?viewmodel|livedata|firebase|plaid|mobile app|mobile application|personal finance|expense tracking|receipt tracking|travel budgeting|financial api)\b/i.test(jobDescription)
     && hasProjectEvidence(evidenceCards, "travel_budgeting_app");
@@ -39,7 +39,7 @@ function projectSelectionRules(jobDescription: string, evidenceCards: EvidenceCa
     required_projects: requiredProjects,
     hard_rules: [
       "If required_projects has entries, include those project IDs in projects and cover their evidence in project bullets.",
-      "If OOP, design patterns, data structures, or algorithms appear in the JD and mario_monogame evidence exists, select mario_monogame.",
+      "For backend, cloud, AI, or data-focused JDs, prefer aep_ai_safety and coffee_dashboard; work-experience evidence already covers OOP, design patterns, data structures, and algorithms, so only select mario_monogame when the JD is game, graphics, or C#-focused.",
       "If Android, Kotlin, MVVM, Jetpack Compose, LiveData, Firebase, Plaid, mobile app architecture, financial API integration, or personal finance app terms appear in the JD and travel_budgeting_app evidence exists, select travel_budgeting_app.",
       "If React, responsive UI, cloud, metrics, or analytics dominate and no required_projects are set, coffee_dashboard is a strong project choice.",
       "If AI, ML, NLP, PyTorch, FAISS, or safety classification dominate and no required_projects are set, aep_ai_safety is a strong project choice."
@@ -65,7 +65,7 @@ function bulletTargetInstruction(canonical: string): string {
     return "Must be covered in a bullet by mentioning supported deployment work such as Jenkins, GitHub Actions, Vercel, production deployment, or code-freeze release coordination.";
   }
   if (normalized === "object-oriented" || normalized === "design patterns" || normalized === "data structures") {
-    return "Must be covered in a bullet using mario_monogame evidence when available, with OOP/design-pattern language such as state machine, command pattern, factory pattern, game state, or save system.";
+    return "Must be covered in a grounded work or project bullet with OOP/design-pattern language such as SOLID, state machine, command pattern, or factory pattern. Prefer work-experience evidence; only use mario_monogame if it is already selected for this JD.";
   }
   if (normalized === "algorithms") {
     return "Must be covered in a bullet using algorithm evidence such as regret-insertion route optimization or recommendation algorithms.";
@@ -112,7 +112,7 @@ function targetedInstructionForIssue(issue: ValidationIssue): string {
     return "Rewrite the suggested bullet to mention Jenkins, GitHub Actions, Vercel, production deployment, or deployment pipelines from the candidate evidence. Update coverage_plan to that bullet.";
   }
   if (message.includes("object-oriented") || message.includes("design patterns") || message.includes("data structures")) {
-    return "Add or rewrite a mario_monogame project bullet using state machine, command pattern, factory pattern, game state, or save-system evidence. Update coverage_plan to the project bullet.";
+    return "Rewrite a work bullet (or a bullet of an already-selected project) using SOLID, state machine, command pattern, or factory pattern evidence. Do not add mario_monogame just for this term. Update coverage_plan to that bullet.";
   }
   if (message.includes("android") || message.includes("kotlin") || message.includes("mvvm") || message.includes("travel_budgeting_app") || message.includes("financial api")) {
     return "Add or rewrite a travel_budgeting_app project bullet using Android, Kotlin, Jetpack Compose, MVVM, LiveData, Firebase, or Plaid API evidence. Update coverage_plan to the project bullet.";
@@ -137,6 +137,9 @@ export function buildSystemPrompt(): string {
     "Unsupported job-description terms must be listed in unsupported_terms instead of claimed.",
     "The resume must target 90-95% of one page; sparse resumes are invalid.",
     "Fill available space with the strongest grounded work and project bullets before adding skills-only coverage.",
+    "Prioritize quantified outcomes from evidence: when an evidence card contains a concrete metric (percentages, counts, time saved, rankings), the bullet built from it must include that metric.",
+    "Every bullet must name at least one concrete technology, system, or measurable outcome from its evidence cards; never emit generic filler like 'collaborated with teams to deliver solutions'.",
+    "Never write near-identical bullets across different roles; each bullet must make a distinct claim backed by its own evidence.",
     "Keep skills compact and natural; do not list low-signal generic labels when specific tools or bullets carry the evidence.",
     "Do not add filler summaries; only compress or remove content when the hard one-page maximum is exceeded.",
     "Return only JSON matching the requested shape; no markdown or prose."
@@ -169,7 +172,7 @@ export function buildUserPrompt(request: GenerateResumeRequest, profile: ResumeP
     page_fit_contract: {
       target: "90-95% of one page",
       hard_rule: "Do not leave the page sparse. Prefer adding grounded work/project bullets before trimming.",
-      work_density: "work_experience must have exactly 4 entries: captech_consultant (Software Consultant, 3 bullets), captech (Associate Software Consultant, 4 bullets), publicis_sapient (2 bullets), sallie_mae (2 bullets). Never merge captech_consultant and captech into one entry.",
+      work_density: "work_experience must have exactly 4 entries: captech_consultant (Software Consultant, 2-3 bullets; prefer 2 strong bullets over 3 with filler), captech (Associate Software Consultant, 4 bullets), publicis_sapient (2 bullets), sallie_mae (2 bullets). Never merge captech_consultant and captech into one entry.",
       project_density: "Select 1-2 projects with 2-4 total project bullets.",
       compression_rule: "Only compress or remove content when the hard max is exceeded; never pad with unsupported claims."
     },
@@ -258,7 +261,7 @@ export function buildRepairPrompt(previousOutput: unknown, issues: ValidationIss
       "If coverage_plan_missing_target or coverage_plan_unused_target, update coverage_plan and the named bullet so selected_evidence_refs are actually used by that bullet.",
       "For Android, Kotlin, MVVM, mobile app architecture, financial API integration, Plaid, Firebase, or expense tracking, prefer travel_budgeting_app when its evidence refs are available.",
       "If required_project_missing, add the project_id named in the validation issue with bullets using that project's evidence refs.",
-      "Required density after repair: CapTech Software Consultant 3 bullets, CapTech Associate 4 bullets, Publicis Sapient 2 bullets, Sallie Mae 2 bullets, projects 2-4 total bullets, at least 13 bullets overall.",
+      "Required density after repair: CapTech Software Consultant 2-3 bullets, CapTech Associate 4 bullets, Publicis Sapient 2 bullets, Sallie Mae 2 bullets, projects 2-4 total bullets, at least 12 bullets overall.",
       "If resume_over_hard_max, compress bullets first, then remove project bullets before work bullets."
     ],
     previous_output: previousOutput,

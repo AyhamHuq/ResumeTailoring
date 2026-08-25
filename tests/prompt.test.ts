@@ -45,7 +45,7 @@ describe("resume generation prompt contract", () => {
     expect(repairPrompt).toMatch(/project_under_min_bullets/);
     expect(repairPrompt).toMatch(/keyword_prefer_bullet_not_covered/);
     expect(repairPrompt).toMatch(/do not add the term only to skills/i);
-    expect(repairPrompt).toMatch(/at least 13 bullets/i);
+    expect(repairPrompt).toMatch(/at least 12 bullets/i);
   });
 
   runPromptTest("gives targeted repair guidance for containerized systems misses", () => {

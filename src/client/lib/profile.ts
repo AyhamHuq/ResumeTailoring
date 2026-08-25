@@ -4,7 +4,7 @@ export const STATIC_PROFILE: StaticProfile = {
   name: "Ayham Huq",
   contact: {
     email: "ayham.huq@gmail.com",
-    location: "Chicago, IL",
+    location: "Chicago, IL (open to relocation nationwide)",
     phone: "817-937-9331",
     linkedin: "linkedin.com/in/ayham-huq",
     website: "ayhamhuq.com"
@@ -25,7 +25,7 @@ export const STATIC_PROFILE: StaticProfile = {
   ],
   certifications: [
     "AWS Certified Solutions Architect - Associate",
-    "AWS Certified AI Practitioner - Foundational"
+    "AWS Certified AI Practitioner"
   ],
   role_modes: ["auto", "backend", "cloud", "full_stack", "ai", "consulting"],
   employers: [

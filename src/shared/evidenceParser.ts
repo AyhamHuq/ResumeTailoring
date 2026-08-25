@@ -419,18 +419,8 @@ function sentenceAround(sectionText: string, fact: KnownFact): string {
   return match ?? sectionText.slice(0, 500);
 }
 
-function genericCardsForSection(section: string, sectionText: string): EvidenceCard[] {
-  const parent_job_id = section === "CapTech Ventures"
-    ? "captech_consultant"
-    : section === "Publicis Sapient"
-      ? "publicis_sapient"
-      : section === "Sallie Mae"
-        ? "sallie_mae"
-        : undefined;
-  const prefix = parent_job_id ?? "additional_projects";
-  return sectionText
-    .split(/\n+/)
-    .map((line) => line.replace(/^[-*\u2022]\s*/, "").trim())
+function cardsFromLines(lines: string[], prefix: string, parent_job_id: JobId | undefined, section: string): EvidenceCard[] {
+  return lines
     .filter((line) => line.length >= 40)
     .slice(0, 12)
     .map((line, index) => EvidenceCardSchema.parse({
@@ -444,6 +434,50 @@ function genericCardsForSection(section: string, sectionText: string): EvidenceC
       role_tags: inferRoleTags(line),
       source_heading: section
     }));
+}
+
+// The braindump's single "CapTech Ventures" section spans both CapTech roles.
+// The National Golf League project (Project 3) is Software Consultant-era work
+// (07/2026 - Present); the messaging migration, Bedrock tool, and internal
+// bootcamp project are Associate-era work (07/2025 - 07/2026).
+const GOLF_ERA_START = /Project 3:|National Golf League/i;
+const GOLF_ERA_END = /CapTech Internal|Coffee Shop/i;
+
+function capTechGenericCards(sectionText: string): EvidenceCard[] {
+  const lines = sectionText
+    .split(/\n+/)
+    .map((line) => line.replace(/^[-*\u2022]\s*/, "").trim());
+  const consultantLines: string[] = [];
+  const associateLines: string[] = [];
+  let inGolfEra = false;
+  for (const line of lines) {
+    if (GOLF_ERA_START.test(line)) {
+      inGolfEra = true;
+    } else if (inGolfEra && GOLF_ERA_END.test(line)) {
+      inGolfEra = false;
+    }
+    (inGolfEra ? consultantLines : associateLines).push(line);
+  }
+  return [
+    ...cardsFromLines(consultantLines, "captech_consultant", "captech_consultant", "CapTech Ventures"),
+    ...cardsFromLines(associateLines, "captech", "captech", "CapTech Ventures")
+  ];
+}
+
+function genericCardsForSection(section: string, sectionText: string): EvidenceCard[] {
+  if (section === "CapTech Ventures") {
+    return capTechGenericCards(sectionText);
+  }
+  const parent_job_id = section === "Publicis Sapient"
+    ? "publicis_sapient"
+    : section === "Sallie Mae"
+      ? "sallie_mae"
+      : undefined;
+  const prefix = parent_job_id ?? "additional_projects";
+  const lines = sectionText
+    .split(/\n+/)
+    .map((line) => line.replace(/^[-*\u2022]\s*/, "").trim());
+  return cardsFromLines(lines, prefix, parent_job_id, section);
 }
 
 function dedupePreserveCase(values: string[]): string[] {

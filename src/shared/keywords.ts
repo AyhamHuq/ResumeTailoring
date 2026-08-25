@@ -43,7 +43,15 @@ const BASE_KNOWN_TERMS = [
   "containerized systems", "data analytics", "analytics", "metrics", "monitors", "monitoring",
   "alerts", "instrumentation", "operational excellence", "CloudWatch alarms", "Athena", "Glue",
   "Pandas", "NumPy", "linear regression", "forecasting", "KPI dashboard", "code reviews",
-  "coding standards", "root cause", "production issues", "debugging", "data structures"
+  "coding standards", "root cause", "production issues", "debugging", "data structures",
+  // Broad tech vocabulary: extracted so JD demands are visible even when unsupported.
+  "Go", "Ruby", "Rust", "C++", "PHP", "Scala", "Swift", "Objective-C", "Perl",
+  "Kafka", "RabbitMQ", "PostgreSQL", "Postgres", "MySQL", "MongoDB", "Cassandra", "Redis",
+  "Memcached", "Elasticsearch", "Snowflake", "Databricks", "Spark", "Hadoop", "Airflow",
+  "Terraform", "Pulumi", "Angular", "Vue", "Svelte", "Next.js", "gRPC", "Django", "FastAPI",
+  "Rails", "Ruby on Rails", "Laravel", ".NET", "ASP.NET", "Linux", "Unix", "Bash",
+  "PowerShell", "shell scripting", "Splunk", "Datadog", "Grafana", "Prometheus",
+  "GCP", "Google Cloud", "OAuth", "SAML", "WebSockets", "ETL", "data pipelines"
 ];
 
 const KNOWN_TERMS = dedupePreserveCase([...BASE_KNOWN_TERMS, ...TAXONOMY_KNOWN_TERMS]);
@@ -90,7 +98,17 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// Terms that collide with common English words when lowercased; require exact-case
+// match against the raw text (avoids extracting "Go" from "go above and beyond").
+const CASE_SENSITIVE_TERMS = new Set(["Go", "Swift", "Spark"]);
+
 function containsTerm(haystack: string, term: string): boolean {
+  const trimmed = term.trim();
+  if (CASE_SENSITIVE_TERMS.has(trimmed)) {
+    const pattern = escapeRegex(trimmed);
+    return new RegExp(`(^|[^A-Za-z0-9#+/-])${pattern}(?=$|[^A-Za-z0-9#+/-])`).test(haystack);
+  }
+
   const normalizedTerm = normalize(term);
   if (!normalizedTerm) {
     return false;

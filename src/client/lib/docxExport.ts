@@ -343,9 +343,9 @@ function formatSkillLines(skills: string[]): string[] {
 
   const remaining = new Set(skills);
   const categories = [
-    { label: "Languages", terms: ["Java", "Python", "Golang", "TypeScript", "JavaScript", "C#", "C/C++", "SQL", "Bash", "YAML"] },
-    { label: "Cloud/Backend", terms: ["AWS Lambda", "API Gateway", "SQS", "SNS", "DynamoDB", "S3", "CloudWatch Logs", "IAM", "CloudFormation", "CDK", "Ansible", "Spring Boot", "Flask", "REST APIs"] },
-    { label: "AI/Tools", terms: ["LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "Docker", "Jenkins", "GitHub Actions", "Jest", "pytest", "Playwright", "React", "React Native"] }
+    { label: "Languages", terms: ["Java", "Python", "Go", "Golang", "Kotlin", "TypeScript", "JavaScript", "C#", "C/C++", "SQL", "Bash", "YAML"] },
+    { label: "Cloud/Backend", terms: ["AWS", "AWS Lambda", "Lambda", "API Gateway", "SQS", "SNS", "DynamoDB", "S3", "Kinesis", "CloudWatch", "CloudWatch Logs", "Athena", "Glue", "IAM", "CloudFormation", "CDK", "Ansible", "Azure SQL", "Spring Boot", "Flask", "Node.js", "REST APIs", "Firebase", "Plaid API"] },
+    { label: "AI/Tools", terms: ["Bedrock", "LangChain", "RAG", "OpenSearch", "FAISS", "PyTorch", "Docker", "Jenkins", "GitHub Actions", "Git", "Jest", "pytest", "JUnit", "Playwright", "React", "React Native"] }
   ];
 
   const lines = categories.map((category) => {
