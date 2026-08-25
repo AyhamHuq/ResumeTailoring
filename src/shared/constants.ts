@@ -4,7 +4,7 @@ export const PROJECT_IDS = ["aep_ai_safety", "mario_monogame", "coffee_dashboard
 
 export const SECTION_BUDGETS = {
   workExperience: {
-    captech_consultant: { minBullets: 3, maxBullets: 3 },
+    captech_consultant: { minBullets: 2, maxBullets: 3 },
     captech: { minBullets: 4, maxBullets: 4 },
     publicis_sapient: { minBullets: 2, maxBullets: 2 },
     sallie_mae: { minBullets: 2, maxBullets: 2 }
@@ -31,7 +31,7 @@ export const SECTION_BUDGETS = {
     targetMinFillPercent: 90,
     targetMaxFillPercent: 95,
     hardMaxEstimatedLines: 68,
-    minTotalBullets: 13
+    minTotalBullets: 12
   }
 } as const;
 

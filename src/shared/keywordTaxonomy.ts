@@ -86,7 +86,7 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
   },
   {
     canonical: "IaC",
-    aliases: ["infrastructure as code"],
+    aliases: ["infrastructure as code", "infrastructure-as-code"],
     claimableAliases: ["CloudFormation", "CDK", "Ansible"],
     placement: "skill_ok",
     allowInSkills: true,
@@ -360,6 +360,70 @@ export const KEYWORD_TAXONOMY: KeywordTaxonomyEntry[] = [
   {
     canonical: "unit testing",
     claimableAliases: ["Jest", "pytest", "JUnit"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "Go",
+    aliases: ["Golang"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Go",
+    skillPriority: 85
+  },
+  {
+    canonical: "message queues",
+    aliases: ["message queue", "messaging queues", "message brokers", "message broker"],
+    claimableAliases: ["SQS", "SNS", "event-driven"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "distributed systems",
+    aliases: ["distributed system", "distributed computing", "large-scale distributed systems"],
+    claimableAliases: ["event-driven architecture", "event-driven", "SQS", "Kinesis", "serverless", "Lambda"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "NoSQL",
+    aliases: ["NoSQL databases", "NoSQL database"],
+    claimableAliases: ["DynamoDB"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "DynamoDB"
+  },
+  {
+    canonical: "relational databases",
+    aliases: ["relational database", "RDBMS"],
+    claimableAliases: ["SQL", "Azure SQL", "SQLite", "Athena"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "SQL"
+  },
+  {
+    canonical: "observability",
+    claimableAliases: ["CloudWatch Logs", "CloudWatch Insights", "CloudWatch alarms", "alarms", "logging", "tracing"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "authentication",
+    aliases: ["authorization"],
+    claimableAliases: ["JWT", "Firebase Authentication", "IAM", "least-privilege IAM", "OAuth"],
+    placement: "prefer_bullet",
+    allowInSkills: false
+  },
+  {
+    canonical: "Azure",
+    claimableAliases: ["Azure SQL", "Azure DevOps"],
+    placement: "skill_ok",
+    allowInSkills: true,
+    skillLabel: "Azure SQL"
+  },
+  {
+    canonical: "DevOps",
+    claimableAliases: ["CI/CD", "Jenkins", "GitHub Actions", "Azure DevOps", "production deployment"],
     placement: "prefer_bullet",
     allowInSkills: false
   }

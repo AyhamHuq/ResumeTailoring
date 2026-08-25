@@ -71,6 +71,10 @@ export function MatchScoreCard({
           JD asks for {result.yoeRequirement.min}+ yrs &middot; You have {result.candidateYoe.toFixed(1)} yrs
         </div>
       )}
+
+      <div className="score-caveat" style={{ fontSize: "0.72rem", opacity: 0.65, marginTop: "0.5rem" }}>
+        Self-computed against this pipeline&apos;s own keyword extraction — not an ATS or recruiter score.
+      </div>
     </section>
   );
 }
