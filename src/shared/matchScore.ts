@@ -103,8 +103,13 @@ export type MatchScoreComparison = {
 
 const YOE_PATTERNS: { pattern: RegExp; extract: (m: RegExpMatchArray) => YoeRequirement }[] = [
   {
-    // "3-5 years of experience"
-    pattern: /(\d+)\s*[-–]\s*(\d+)\s*(?:years?|yrs?)(?:\s+of)?\s+(?:professional\s+)?(?:relevant\s+)?experience/i,
+    // "6 months to 2 years of experience"
+    pattern: /(\d+)\s*months?\s*(?:to|[-–])\s*(\d+)\s*(?:years?|yrs?)/i,
+    extract: (m) => ({ min: Math.round((Number(m[1]) / 12) * 10) / 10, max: Number(m[2]), raw: m[0] }),
+  },
+  {
+    // "3-5 years of experience" / "3 to 5 years of experience"
+    pattern: /(\d+)\s*(?:[-–]|to)\s*(\d+)\s*(?:years?|yrs?)(?:\s+of)?\s+(?:professional\s+)?(?:relevant\s+)?experience/i,
     extract: (m) => ({ min: Number(m[1]), max: Number(m[2]), raw: m[0] }),
   },
   {
@@ -163,9 +168,11 @@ function parseDateRange(dates: string): { startMs: number; endMs: number } | nul
   return { startMs, endMs };
 }
 
-export function calculateCandidateYoe(employers: { dates: string }[]): number {
+export function calculateCandidateYoe(employers: { dates: string; title?: string }[]): number {
   let totalMonths = 0;
   for (const employer of employers) {
+    // Recruiters count post-graduation full-time experience; internships inflate YOE.
+    if (employer.title && /\bintern\b/i.test(employer.title)) continue;
     const range = parseDateRange(employer.dates);
     if (!range) continue;
     const months = (range.endMs - range.startMs) / (1000 * 60 * 60 * 24 * 30.44);
@@ -193,7 +200,8 @@ export function scoreKeywordCoverage(report: KeywordReport): number {
   return Math.round((sum / items.length) * 100);
 }
 
-const PLACEMENT_VALUE: Record<string, number> = {
+// For keywords that should ideally appear in bullet points
+const BULLET_PLACEMENT_VALUE: Record<string, number> = {
   covered_in_bullets: 1.0,
   covered_in_skills_only: 0.3,
   alternative_satisfied: 0.1,
@@ -201,13 +209,28 @@ const PLACEMENT_VALUE: Record<string, number> = {
   unsupported: 0.0,
 };
 
+// For keywords where skills-section placement is acceptable
+const SKILL_PLACEMENT_VALUE: Record<string, number> = {
+  covered_in_bullets: 1.0,
+  covered_in_skills_only: 0.7,
+  alternative_satisfied: 0.3,
+  supported_but_omitted_for_space: 0.1,
+  unsupported: 0.0,
+};
+
 export function scoreKeywordPlacement(report: KeywordReport): number {
-  const preferBullet = (report.details ?? []).filter(
-    (item) => item.placement_recommendation === "prefer_bullet"
+  const items = (report.details ?? []).filter(
+    (item) => item.placement_recommendation !== "omit"
   );
-  if (preferBullet.length === 0) return 100;
-  const sum = preferBullet.reduce((acc, item) => acc + (PLACEMENT_VALUE[item.status] ?? 0), 0);
-  return Math.round((sum / preferBullet.length) * 100);
+  if (items.length === 0) return 100;
+  const sum = items.reduce((acc, item) => {
+    const valueMap = (item.placement_recommendation === "prefer_bullet"
+                   || item.placement_recommendation === "needs_source_update")
+      ? BULLET_PLACEMENT_VALUE
+      : SKILL_PLACEMENT_VALUE;
+    return acc + (valueMap[item.status] ?? 0);
+  }, 0);
+  return Math.round((sum / items.length) * 100);
 }
 
 export function scoreYoeMatch(
@@ -238,7 +261,7 @@ export function scoreCredentials(
   const jdLower = jobDescription.toLowerCase();
 
   // Check if JD mentions any education or certification requirements
-  const mentionsDegree = /bachelor|master|b\.?s\.?|m\.?s\.?|degree/i.test(jobDescription);
+  const mentionsDegree = /\b(?:bachelor|master'?s?|b\.?s\.?|m\.?s\.?|degree)\b/i.test(jobDescription);
   const mentionsCerts = /certif/i.test(jobDescription);
 
   if (!mentionsDegree && !mentionsCerts) {
