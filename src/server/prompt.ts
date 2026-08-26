@@ -8,7 +8,7 @@ import {
   type ValidationIssue
 } from "../shared";
 
-function compactEvidenceCard(card: EvidenceCard) {
+export function compactEvidenceCard(card: EvidenceCard) {
   return {
     id: card.id,
     type: card.type,
