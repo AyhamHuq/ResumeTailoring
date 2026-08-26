@@ -21,6 +21,9 @@ export function saveState(state: AppState) {
       generatedResume: state.generatedResume,
       validationIssues: state.validationIssues,
       lastGeneratedKey: state.lastGeneratedKey,
+      generatedCoverLetter: state.generatedCoverLetter,
+      coverLetterValidationIssues: state.coverLetterValidationIssues,
+      lastCoverLetterKey: state.lastCoverLetterKey,
     }),
   );
 }

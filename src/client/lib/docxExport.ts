@@ -365,7 +365,7 @@ function formatSkillLines(skills: string[]): string[] {
   return lines;
 }
 
-function downloadBlob(blob: Blob, fileName: string) {
+export function downloadBlob(blob: Blob, fileName: string) {
   const href = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = href;

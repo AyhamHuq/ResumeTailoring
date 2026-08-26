@@ -139,6 +139,51 @@ export interface GenerateResumeResponse {
   validationIssues?: ValidationIssue[];
 }
 
+export interface CoverLetterParagraph {
+  text: string;
+  evidence_refs: string[];
+  jd_keywords: string[];
+  word_count?: number;
+  purpose: "hook" | "technical_depth" | "leadership_impact" | "cultural_fit" | "closing";
+}
+
+export interface GeneratedCoverLetter {
+  role_mode?: RoleMode;
+  salutation: string;
+  opening: CoverLetterParagraph;
+  body_paragraphs: CoverLetterParagraph[];
+  closing: CoverLetterParagraph;
+  sign_off: string;
+  complementary_keywords: string[];
+}
+
+export interface CoverLetterFitReport {
+  total_words: number;
+  target_min_words: number;
+  target_max_words: number;
+  paragraph_count: number;
+  evidence_ref_count: number;
+  status: "under_target" | "target" | "over_target";
+}
+
+export interface GenerateCoverLetterRequest {
+  jobDescription: string;
+  roleMode: RoleMode;
+  staticProfile: StaticProfile;
+  evidenceCards: EvidenceCard[];
+  resumeKeywordReport?: KeywordReport;
+  companyName?: string;
+  positionTitle?: string;
+}
+
+export interface GenerateCoverLetterResponse {
+  coverLetter: GeneratedCoverLetter;
+  keywordReport?: KeywordReport;
+  fitReport?: CoverLetterFitReport;
+  mode?: "mock" | "llm";
+  validationIssues?: ValidationIssue[];
+}
+
 export interface AppState {
   evidenceCards: EvidenceCard[];
   jobDescription: string;
@@ -146,4 +191,7 @@ export interface AppState {
   generatedResume: GeneratedResume | null;
   validationIssues: ValidationIssue[];
   lastGeneratedKey: string;
+  generatedCoverLetter: GeneratedCoverLetter | null;
+  coverLetterValidationIssues: ValidationIssue[];
+  lastCoverLetterKey: string;
 }

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, RotateCcw } from "lucide-react";
+import { AlertCircle, RotateCcw, WandSparkles } from "lucide-react";
+import { CoverLetterExportButton } from "./components/CoverLetterExportButton";
+import { CoverLetterPreview } from "./components/CoverLetterPreview";
 import { EvidenceTraceDrawer } from "./components/EvidenceTraceDrawer";
 import { ExportButton } from "./components/ExportButton";
-import { GenerateButton } from "./components/GenerateButton";
 import { JDInput } from "./components/JDInput";
 import { KeywordEvidencePanel } from "./components/KeywordEvidencePanel";
 import { MatchScoreCard } from "./components/MatchScoreCard";
@@ -12,7 +13,7 @@ import { ResumePreview } from "./components/ResumePreview";
 import { RoleModeSelector } from "./components/RoleModeSelector";
 import { SetupPanel } from "./components/SetupPanel";
 import { parseBraindump } from "./lib/evidence";
-import { generateResume } from "./lib/api";
+import { generateResume, generateCoverLetter } from "./lib/api";
 import { classifyKeywords } from "./lib/keywords";
 import { loadState, saveState } from "./lib/storage";
 import { STATIC_PROFILE } from "./lib/profile";
@@ -22,6 +23,7 @@ import type {
   AppState,
   EvidenceCard,
   GeneratedBullet,
+  GeneratedCoverLetter,
   GeneratedResume,
   RoleMode,
   ValidationIssue,
@@ -34,13 +36,22 @@ const initialState: AppState = {
   generatedResume: null,
   validationIssues: [],
   lastGeneratedKey: "",
+  generatedCoverLetter: null,
+  coverLetterValidationIssues: [],
+  lastCoverLetterKey: "",
 };
+
+type ActiveTab = "resume" | "cover-letter";
 
 export function App() {
   const [state, setState] = useState<AppState>(() => ({ ...initialState, ...loadState() }));
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
   const [selectedBullet, setSelectedBullet] = useState<GeneratedBullet | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("resume");
+  const [companyName, setCompanyName] = useState("");
+  const [positionTitle, setPositionTitle] = useState("");
 
   useEffect(() => {
     saveState(state);
@@ -90,6 +101,9 @@ export function App() {
         generatedResume: null,
         validationIssues: [],
         lastGeneratedKey: "",
+        generatedCoverLetter: null,
+        coverLetterValidationIssues: [],
+        lastCoverLetterKey: "",
       }));
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to parse braindump.";
@@ -98,7 +112,7 @@ export function App() {
   }
 
   function updateEvidenceCards(evidenceCards: EvidenceCard[]) {
-    setState((current) => ({ ...current, evidenceCards, generatedResume: null, lastGeneratedKey: "" }));
+    setState((current) => ({ ...current, evidenceCards, generatedResume: null, lastGeneratedKey: "", generatedCoverLetter: null, lastCoverLetterKey: "" }));
   }
 
   async function handleGenerate() {
@@ -126,6 +140,84 @@ export function App() {
       setState((current) => ({ ...current, validationIssues: [issue] }));
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleGenerateCoverLetter() {
+    setIsGeneratingCoverLetter(true);
+    setState((current) => ({ ...current, coverLetterValidationIssues: [] }));
+    try {
+      const response = await generateCoverLetter({
+        jobDescription: state.jobDescription,
+        roleMode: state.roleMode,
+        staticProfile: STATIC_PROFILE,
+        evidenceCards: state.evidenceCards,
+        resumeKeywordReport: keywordReport,
+        companyName: companyName || undefined,
+        positionTitle: positionTitle || undefined,
+      });
+      setState((current) => ({
+        ...current,
+        generatedCoverLetter: response.coverLetter,
+        coverLetterValidationIssues: response.validationIssues ?? [],
+        lastCoverLetterKey: generationKey,
+      }));
+      setActiveTab("cover-letter");
+    } catch (error) {
+      const issue: ValidationIssue = {
+        severity: "error",
+        message: error instanceof Error ? error.message : "Cover letter generation failed.",
+      };
+      setState((current) => ({ ...current, coverLetterValidationIssues: [issue] }));
+    } finally {
+      setIsGeneratingCoverLetter(false);
+    }
+  }
+
+  async function handleGenerateBoth() {
+    setIsGenerating(true);
+    setIsGeneratingCoverLetter(true);
+    setState((current) => ({ ...current, validationIssues: [], coverLetterValidationIssues: [] }));
+    try {
+      const resumeResponse = await generateResume({
+        jobDescription: state.jobDescription,
+        roleMode: state.roleMode,
+        staticProfile: STATIC_PROFILE,
+        evidenceCards: state.evidenceCards,
+      });
+      setState((current) => ({
+        ...current,
+        generatedResume: resumeResponse.resume,
+        validationIssues: resumeResponse.validationIssues ?? [],
+        lastGeneratedKey: generationKey,
+      }));
+      setSelectedBullet(null);
+      setIsGenerating(false);
+
+      const coverLetterResponse = await generateCoverLetter({
+        jobDescription: state.jobDescription,
+        roleMode: state.roleMode,
+        staticProfile: STATIC_PROFILE,
+        evidenceCards: state.evidenceCards,
+        resumeKeywordReport: resumeResponse.keywordReport,
+        companyName: companyName || undefined,
+        positionTitle: positionTitle || undefined,
+      });
+      setState((current) => ({
+        ...current,
+        generatedCoverLetter: coverLetterResponse.coverLetter,
+        coverLetterValidationIssues: coverLetterResponse.validationIssues ?? [],
+        lastCoverLetterKey: generationKey,
+      }));
+    } catch (error) {
+      const issue: ValidationIssue = {
+        severity: "error",
+        message: error instanceof Error ? error.message : "Generation failed.",
+      };
+      setState((current) => ({ ...current, validationIssues: [...current.validationIssues, issue] }));
+    } finally {
+      setIsGenerating(false);
+      setIsGeneratingCoverLetter(false);
     }
   }
 
@@ -170,22 +262,65 @@ export function App() {
             value={state.jobDescription}
             onChange={(jobDescription) => setState((current) => ({ ...current, jobDescription }))}
           />
-          <div className="action-row">
-            <GenerateButton
-              disabled={!state.jobDescription.trim() || state.evidenceCards.length === 0}
-              isGenerating={isGenerating}
-              needsRegeneration={needsRegeneration}
-              onGenerate={handleGenerate}
+          <div className="cover-letter-fields">
+            <input
+              type="text"
+              className="cl-field"
+              placeholder="Company name (optional)"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
             />
+            <input
+              type="text"
+              className="cl-field"
+              placeholder="Position title (optional)"
+              value={positionTitle}
+              onChange={(e) => setPositionTitle(e.target.value)}
+            />
+          </div>
+          <div className="action-row">
+            <button
+              className="primary-button"
+              type="button"
+              disabled={!state.jobDescription.trim() || state.evidenceCards.length === 0 || isGenerating || isGeneratingCoverLetter}
+              onClick={handleGenerateBoth}
+            >
+              <WandSparkles size={16} />
+              {isGenerating || isGeneratingCoverLetter ? "Generating…" : "Generate Both"}
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={!state.jobDescription.trim() || state.evidenceCards.length === 0 || isGenerating}
+              onClick={handleGenerate}
+            >
+              {isGenerating ? "Generating…" : needsRegeneration ? "Regenerate Resume" : "Resume Only"}
+            </button>
+            <button
+              className="secondary-button"
+              type="button"
+              disabled={!state.generatedResume || isGeneratingCoverLetter}
+              onClick={handleGenerateCoverLetter}
+            >
+              {isGeneratingCoverLetter ? "Generating…" : state.generatedCoverLetter ? "Regen Cover Letter" : "Cover Letter Only"}
+            </button>
+          </div>
+          <div className="action-row">
             <ExportButton
               profile={STATIC_PROFILE}
               resume={displayResume}
               evidenceCards={state.evidenceCards}
               jobDescription={state.jobDescription}
             />
+            <CoverLetterExportButton
+              profile={STATIC_PROFILE}
+              coverLetter={state.generatedCoverLetter}
+              companyName={companyName || undefined}
+              positionTitle={positionTitle || undefined}
+            />
           </div>
 
-          {state.validationIssues.length > 0 && (
+          {activeTab === "resume" && state.validationIssues.length > 0 && (
             <div className="issues-panel" role="alert">
               <div className="panel-title">
                 <AlertCircle size={16} />
@@ -200,13 +335,52 @@ export function App() {
             </div>
           )}
 
-          <ResumePreview
-            profile={STATIC_PROFILE}
-            resume={displayResume}
-            evidenceCards={state.evidenceCards}
-            jobDescription={state.jobDescription}
-            onSelectBullet={setSelectedBullet}
-          />
+          {activeTab === "cover-letter" && state.coverLetterValidationIssues.length > 0 && (
+            <div className="issues-panel" role="alert">
+              <div className="panel-title">
+                <AlertCircle size={16} />
+                Validation
+              </div>
+              {state.coverLetterValidationIssues.map((issue, index) => (
+                <p key={`${issue.message}-${index}`} className={`issue issue-${issue.severity}`}>
+                  {issue.path ? `${issue.path}: ` : ""}
+                  {issue.message}
+                </p>
+              ))}
+            </div>
+          )}
+
+          <div className="tab-control">
+            <button
+              className={`tab-button ${activeTab === "resume" ? "tab-active" : ""}`}
+              type="button"
+              onClick={() => setActiveTab("resume")}
+            >
+              Resume
+            </button>
+            <button
+              className={`tab-button ${activeTab === "cover-letter" ? "tab-active" : ""}`}
+              type="button"
+              onClick={() => setActiveTab("cover-letter")}
+            >
+              Cover Letter
+            </button>
+          </div>
+
+          {activeTab === "resume" ? (
+            <ResumePreview
+              profile={STATIC_PROFILE}
+              resume={displayResume}
+              evidenceCards={state.evidenceCards}
+              jobDescription={state.jobDescription}
+              onSelectBullet={setSelectedBullet}
+            />
+          ) : (
+            <CoverLetterPreview
+              profile={STATIC_PROFILE}
+              coverLetter={state.generatedCoverLetter}
+            />
+          )}
         </section>
 
         <aside className="right-rail">

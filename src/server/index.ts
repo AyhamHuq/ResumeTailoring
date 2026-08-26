@@ -3,17 +3,21 @@ import express from "express";
 import cors from "cors";
 import {
   GenerateResumeRequestSchema,
+  GenerateCoverLetterRequestSchema,
   GeneratedResumeSchema,
   curateGeneratedResumeSkills,
   scoreKeywords,
   termsProhibitedAsClaims,
   validateGeneratedResume,
+  validateGeneratedCoverLetter,
   type ValidationIssue
 } from "../shared";
 import { parseDocxBuffer } from "./evidenceParser";
 import { getLlmConfig, callOpenAiCompatibleJson } from "./llmProvider";
 import { generateMockResume } from "./mockGenerator";
 import { buildRepairPrompt, buildSystemPrompt, buildUserPrompt } from "./prompt";
+import { buildCoverLetterRepairPrompt, buildCoverLetterSystemPrompt, buildCoverLetterUserPrompt } from "./coverLetterPrompt";
+import { generateMockCoverLetter } from "./mockCoverLetterGenerator";
 import { loadResumeProfile } from "./profile";
 
 const app = express();
@@ -160,6 +164,82 @@ app.post("/api/generate-resume", async (req, res) => {
     res.status(502).json({
       ok: false,
       errors: [errorIssue("generation_failed", error instanceof Error ? error.message : "Resume generation failed.")]
+    });
+  }
+});
+
+app.post("/api/generate-cover-letter", async (req, res) => {
+  try {
+    const profile = await loadResumeProfile();
+    const parsed = GenerateCoverLetterRequestSchema.safeParse({ ...req.body, profile: req.body?.profile ?? profile });
+    if (!parsed.success) {
+      res.status(400).json({
+        ok: false,
+        errors: parsed.error.issues.map((issue) => errorIssue("request_schema_error", issue.message, issue.path.join(".") || "$"))
+      });
+      return;
+    }
+
+    const request = parsed.data;
+    const effectiveProfile = request.profile ?? profile;
+    const llmConfig = getLlmConfig();
+    const mode = llmConfig.apiKey ? "llm" : "mock";
+    let rawOutput: unknown;
+
+    if (mode === "mock") {
+      rawOutput = generateMockCoverLetter(
+        request.evidence_cards,
+        effectiveProfile,
+        request.role_mode,
+        request.job_description,
+        request.company_name,
+        request.position_title
+      );
+    } else {
+      rawOutput = await callOpenAiCompatibleJson([
+        { role: "system", content: buildCoverLetterSystemPrompt() },
+        { role: "user", content: buildCoverLetterUserPrompt(request, effectiveProfile) }
+      ], llmConfig);
+    }
+
+    let validation = validateGeneratedCoverLetter(rawOutput, {
+      evidenceCards: request.evidence_cards,
+      jobDescription: request.job_description,
+      keywordReport: request.resume_keyword_report
+    });
+
+    for (let attempt = 0; validation.issues.length > 0 && mode === "llm" && attempt < MAX_LLM_REPAIR_ATTEMPTS; attempt += 1) {
+      rawOutput = await callOpenAiCompatibleJson([
+        { role: "system", content: buildCoverLetterSystemPrompt() },
+        { role: "user", content: buildCoverLetterUserPrompt(request, effectiveProfile) },
+        { role: "user", content: buildCoverLetterRepairPrompt(rawOutput, validation.issues, request.evidence_cards) }
+      ], llmConfig);
+      validation = validateGeneratedCoverLetter(rawOutput, {
+        evidenceCards: request.evidence_cards,
+        jobDescription: request.job_description,
+        keywordReport: request.resume_keyword_report
+      });
+    }
+
+    if (!validation.coverLetter || validation.issues.length > 0) {
+      res.status(422).json({ ok: false, errors: validation.issues, raw_model_output: rawOutput });
+      return;
+    }
+
+    res.json({
+      ok: true,
+      cover_letter: validation.coverLetter,
+      coverLetter: validation.coverLetter,
+      fit_report: validation.fit_report,
+      fitReport: validation.fit_report,
+      validation_issues: [],
+      validationIssues: [],
+      mode
+    });
+  } catch (error) {
+    res.status(502).json({
+      ok: false,
+      errors: [errorIssue("generation_failed", error instanceof Error ? error.message : "Cover letter generation failed.")]
     });
   }
 });
