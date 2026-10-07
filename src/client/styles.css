@@ -232,6 +232,13 @@ button:disabled {
 
 .action-row {
   justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.action-row + .action-row {
+  margin-top: 0;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .export-control {
@@ -602,4 +609,76 @@ button:disabled {
     align-items: stretch;
     flex-direction: column;
   }
+}
+
+/* ── Cover Letter UI ── */
+
+.cover-letter-fields {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cl-field {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  background: #fff;
+}
+
+.cl-field:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.15);
+}
+
+.tab-control {
+  display: flex;
+  gap: 0;
+  margin-bottom: 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.tab-button {
+  padding: 6px 16px;
+  border: none;
+  background: #f7f8fa;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64707d;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab-button:hover {
+  background: #eef1f4;
+}
+
+.tab-button.tab-active {
+  background: #4a90d9;
+  color: #fff;
+}
+
+.cover-letter-page {
+  line-height: 1.65;
+}
+
+.cover-letter-salutation {
+  margin: 0 0 12px;
+}
+
+.cover-letter-paragraph {
+  margin: 0 0 12px;
+  text-align: justify;
+}
+
+.cover-letter-signoff {
+  margin: 20px 0 0;
+  line-height: 1.8;
 }

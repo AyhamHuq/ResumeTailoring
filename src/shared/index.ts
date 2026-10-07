@@ -7,3 +7,4 @@ export * from "./schemas";
 export * from "./skills";
 export * from "./matchScore";
 export * from "./validation";
+export * from "./coverLetterValidation";

@@ -57,3 +57,13 @@ export const GROUNDED_SYNONYMS: Record<string, string[]> = {
   "financial api integration": ["plaid api", "plaid", "bank-account linking", "firebase"],
   "expense tracking": ["travel budgeting", "receipt tracking", "personal finance app", "plaid api", "firebase"]
 };
+
+export const COVER_LETTER_BUDGETS = {
+  totalWords: { min: 250, max: 400, hardMax: 450 },
+  paragraphs: { min: 4, max: 5 },
+  openingWords: { min: 40, max: 80 },
+  bodyParagraphWords: { min: 50, max: 120 },
+  closingWords: { min: 30, max: 60 },
+  minEvidenceRefs: 3,
+  minKeywordsCovered: 4,
+} as const;

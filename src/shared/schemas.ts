@@ -227,3 +227,72 @@ export const GenerateResumeResponseSchema = z.discriminatedUnion("ok", [
   })
 ]);
 export type GenerateResumeResponse = z.infer<typeof GenerateResumeResponseSchema>;
+
+// ── Cover Letter Schemas ──
+
+export const CoverLetterParagraphPurposeSchema = z.enum([
+  "hook",
+  "technical_depth",
+  "leadership_impact",
+  "cultural_fit",
+  "closing"
+]);
+export type CoverLetterParagraphPurpose = z.infer<typeof CoverLetterParagraphPurposeSchema>;
+
+export const CoverLetterParagraphSchema = z.object({
+  text: z.string().min(1),
+  evidence_refs: z.array(z.string().min(1)).default([]),
+  jd_keywords: z.array(z.string().min(1)).default([]),
+  word_count: z.number().int().nonnegative().optional(),
+  purpose: CoverLetterParagraphPurposeSchema
+});
+export type CoverLetterParagraph = z.infer<typeof CoverLetterParagraphSchema>;
+
+export const GeneratedCoverLetterSchema = z.object({
+  role_mode: RoleModeSchema,
+  salutation: z.string().min(1),
+  opening: CoverLetterParagraphSchema,
+  body_paragraphs: z.array(CoverLetterParagraphSchema).min(2).max(3),
+  closing: CoverLetterParagraphSchema,
+  sign_off: z.string().min(1),
+  complementary_keywords: z.array(z.string().min(1)).default([])
+});
+export type GeneratedCoverLetter = z.infer<typeof GeneratedCoverLetterSchema>;
+
+export const CoverLetterFitReportSchema = z.object({
+  total_words: z.number().int().nonnegative(),
+  target_min_words: z.number().int().nonnegative(),
+  target_max_words: z.number().int().nonnegative(),
+  paragraph_count: z.number().int().nonnegative(),
+  evidence_ref_count: z.number().int().nonnegative(),
+  status: z.enum(["under_target", "target", "over_target"])
+});
+export type CoverLetterFitReport = z.infer<typeof CoverLetterFitReportSchema>;
+
+const RawGenerateCoverLetterRequestSchema = z.object({
+  job_description: z.string().min(20),
+  role_mode: RoleModeSchema.default("auto"),
+  profile: ResumeProfileSchema.optional(),
+  evidence_cards: z.array(EvidenceCardSchema).min(1),
+  resume_keyword_report: KeywordReportSchema.optional(),
+  company_name: z.string().optional(),
+  position_title: z.string().optional()
+});
+
+export const GenerateCoverLetterRequestSchema = z.preprocess((value) => {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+  const input = value as Record<string, unknown>;
+  return {
+    ...input,
+    job_description: input.job_description ?? input.jobDescription,
+    role_mode: input.role_mode ?? input.roleMode,
+    profile: input.profile ?? input.staticProfile,
+    evidence_cards: input.evidence_cards ?? input.evidenceCards,
+    resume_keyword_report: input.resume_keyword_report ?? input.resumeKeywordReport,
+    company_name: input.company_name ?? input.companyName,
+    position_title: input.position_title ?? input.positionTitle
+  };
+}, RawGenerateCoverLetterRequestSchema);
+export type GenerateCoverLetterRequest = z.infer<typeof GenerateCoverLetterRequestSchema>;

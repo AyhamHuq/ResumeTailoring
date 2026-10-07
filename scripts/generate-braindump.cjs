@@ -56,7 +56,7 @@ Ayham was promoted from Associate Software Consultant (July 2025 - July 2026) to
 
 CapTech Ventures - Software Consultant
 
-July 2026 - Present | Chicago, Illinois
+July 2026 - Present | Columbus, Ohio
 
 Promoted to Software Consultant after one year. Role change brought more client-facing responsibilities: account-wide demos, entrusted with P1 features from conception to full solo development.
 
