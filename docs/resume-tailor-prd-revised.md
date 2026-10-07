@@ -256,7 +256,7 @@ Example profile config:
   "name": "Ayham Huq",
   "contact": {
     "email": "ayham.huq@gmail.com",
-    "location": "Chicago, IL",
+    "location": "Columbus, OH",
     "phone": "817-937-9331",
     "linkedin": "linkedin.com/in/ayham-huq",
     "website": "ayhamhuq.com"
