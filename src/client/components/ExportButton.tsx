@@ -8,16 +8,17 @@ interface ExportButtonProps {
   resume: GeneratedResume | null;
   evidenceCards: EvidenceCard[];
   jobDescription?: string;
+  companyName?: string;
 }
 
-export function ExportButton({ profile, resume, evidenceCards, jobDescription }: ExportButtonProps) {
+export function ExportButton({ profile, resume, evidenceCards, jobDescription, companyName }: ExportButtonProps) {
   const [error, setError] = useState<string | null>(null);
 
   async function handleExport() {
     if (!resume) return;
     setError(null);
     try {
-      await exportResumeDocx(profile, resume, evidenceCards, jobDescription);
+      await exportResumeDocx(profile, resume, evidenceCards, jobDescription, companyName);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "DOCX export failed.");
     }

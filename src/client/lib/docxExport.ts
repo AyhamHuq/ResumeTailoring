@@ -131,11 +131,17 @@ export async function exportResumeDocx(
   profile: StaticProfile,
   resume: GeneratedResume,
   evidenceCards: EvidenceCard[],
-  jobDescription?: string
+  jobDescription?: string,
+  companyName?: string
 ) {
   const blob = await buildResumeDocx({ profile, generatedResume: resume, evidenceCards, jobDescription });
-  const fileName = `${profile.name.replace(/\s+/g, "_")}_Resume.docx`;
-  downloadBlob(blob, fileName);
+  downloadBlob(blob, buildExportFileName(profile.name, "Resume", companyName));
+}
+
+export function buildExportFileName(personName: string, documentType: string, companyName?: string) {
+  const slug = (value: string) => value.trim().replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "");
+  const parts = [slug(personName), companyName ? slug(companyName) : "", documentType].filter(Boolean);
+  return `${parts.join("_")}.docx`;
 }
 
 function normalizeSkills(skills: unknown[]): string[] {

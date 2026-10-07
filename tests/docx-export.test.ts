@@ -48,13 +48,13 @@ describe("DOCX export contract", () => {
         contact: {
           email: "ayham@example.com",
           phone: "555-555-5555",
-          location: "Chicago, IL",
+          location: "Columbus, OH",
           linkedin: "linkedin.com/in/ayham-huq",
         },
         education: [{ school: "Ohio State University", degree: "B.S. Computer Science", graduation: "May 2025", gpa: "3.95" }],
         certifications: ["AWS Certified Solutions Architect - Associate"],
         workExperience: [
-          { id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", dates: "2025 - Present", location: "Chicago, IL" },
+          { id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", dates: "2025 - Present", location: "Columbus, OH" },
         ],
       },
       generatedResume: {
@@ -98,14 +98,14 @@ describe("DOCX export contract", () => {
         contact: {
           email: "ayham@example.com",
           phone: "555-555-5555",
-          location: "Chicago, IL",
+          location: "Columbus, OH",
           linkedin: "linkedin.com/in/ayham-huq",
           website: "ayhamhuq.com",
         },
         education: [{ school: "Ohio State University", degree: "B.S. Computer Science", graduation: "May 2025", gpa: "3.95" }],
         certifications: ["AWS Certified Solutions Architect - Associate", "AWS Certified AI Practitioner - Associate"],
         employers: [
-          { job_id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", dates: "07/2025 - Present", location: "Chicago, IL" },
+          { job_id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", dates: "07/2025 - Present", location: "Columbus, OH" },
           { job_id: "publicis_sapient", employer: "Publicis Sapient", title: "Software Engineer Intern", dates: "06/2024 - 08/2024", location: "Chicago, IL" },
           { job_id: "sallie_mae", employer: "Sallie Mae", title: "Cloud Engineer Intern", dates: "05/2023 - 08/2023", location: "Indianapolis, IN" },
         ],

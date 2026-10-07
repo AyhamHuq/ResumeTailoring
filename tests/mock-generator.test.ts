@@ -14,7 +14,7 @@ const profile = {
   name: "Ayham Huq",
   contact: {
     email: "ayham@example.com",
-    location: "Chicago, IL",
+    location: "Columbus, OH",
     phone: "555-555-5555",
     linkedin: "linkedin.com/in/ayham-huq",
     website: "ayhamhuq.com",
@@ -23,7 +23,7 @@ const profile = {
   certifications: ["AWS Certified Solutions Architect - Associate", "AWS Certified AI Practitioner - Foundational"],
   role_modes: ["auto", "backend", "cloud", "full_stack", "ai", "consulting"],
   employers: [
-    { job_id: "captech_consultant", employer: "CapTech Ventures", title: "Software Consultant", location: "Chicago, IL", dates: "07/2026 - Present" },
+    { job_id: "captech_consultant", employer: "CapTech Ventures", title: "Software Consultant", location: "Columbus, OH", dates: "07/2026 - Present" },
     { job_id: "captech", employer: "CapTech Ventures", title: "Associate Software Consultant", location: "Chicago, IL", dates: "07/2025 - 07/2026" },
     { job_id: "publicis_sapient", employer: "Publicis Sapient", title: "Software Engineer Intern", location: "Chicago, IL", dates: "06/2024 - 08/2024" },
     { job_id: "sallie_mae", employer: "Sallie Mae", title: "Cloud Engineer Intern", location: "Indianapolis, IN", dates: "05/2023 - 08/2023" },

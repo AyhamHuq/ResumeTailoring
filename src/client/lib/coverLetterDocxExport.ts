@@ -5,7 +5,7 @@ import {
   Paragraph,
   TextRun,
 } from "docx";
-import { downloadBlob } from "./docxExport";
+import { buildExportFileName, downloadBlob } from "./docxExport";
 import type { GeneratedCoverLetter, StaticProfile } from "./types";
 
 const font = "Calibri";
@@ -94,8 +94,7 @@ export async function exportCoverLetterDocx(
   positionTitle?: string
 ) {
   const blob = await buildCoverLetterDocx({ profile, coverLetter, companyName, positionTitle });
-  const fileName = `${profile.name.replace(/\s+/g, "_")}_Cover_Letter.docx`;
-  downloadBlob(blob, fileName);
+  downloadBlob(blob, buildExportFileName(profile.name, "Cover_Letter", companyName));
 }
 
 function textParagraph(

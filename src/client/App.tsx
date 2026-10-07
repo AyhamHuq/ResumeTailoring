@@ -311,6 +311,7 @@ export function App() {
               resume={displayResume}
               evidenceCards={state.evidenceCards}
               jobDescription={state.jobDescription}
+              companyName={companyName || undefined}
             />
             <CoverLetterExportButton
               profile={STATIC_PROFILE}

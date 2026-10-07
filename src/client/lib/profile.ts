@@ -4,7 +4,7 @@ export const STATIC_PROFILE: StaticProfile = {
   name: "Ayham Huq",
   contact: {
     email: "ayham.huq@gmail.com",
-    location: "Chicago, IL (open to relocation nationwide)",
+    location: "Columbus, OH (open to relocation nationwide)",
     phone: "817-937-9331",
     linkedin: "linkedin.com/in/ayham-huq",
     website: "ayhamhuq.com"
@@ -33,7 +33,7 @@ export const STATIC_PROFILE: StaticProfile = {
       job_id: "captech_consultant",
       employer: "CapTech Ventures",
       title: "Software Consultant",
-      location: "Chicago, Illinois",
+      location: "Columbus, Ohio",
       dates: "07/2026 - Present"
     },
     {
